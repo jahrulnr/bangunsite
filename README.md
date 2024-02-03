@@ -1,4 +1,6 @@
-# Laravel BangunSite with Docker
+![dashboard](screenshots/dashboard.png)
+
+# BangunSite
 
 This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PHP 8.2. It provides a convenient way to manage multiple web applications within a Dockerized environment. Laravel is utilized for its powerful features in managing web applications, while Docker ensures portability and consistency across different environments.
 
@@ -27,6 +29,7 @@ This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PH
 
     ```bash
     git clone https://github.com/jahrulnr/bangunsite.git
+    git switch development
     ```
 
 2. Navigate to the project directory:
@@ -38,10 +41,22 @@ This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PH
 3. Build and start the Docker containers:
 
     ```bash
-    docker-compose up --build -d
+    make up-vm
+    make cp-db
+    docker exec -i bangunsite artisan key:generate
+    make migrate
     ```
 
 4. Access the Laravel BangunSite at `http://localhost:8080` in your web browser.
+
+### Default Account
+
+email: ```admin@demo.com```\
+password: ```123456```
+
+### Configuration
+
+You can change .env configuration at ```./infra/.env``` (See docker-compose.yml for details)
 
 ## Contributing
 
