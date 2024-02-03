@@ -1,0 +1,28 @@
+version: '3'
+services:
+  bangunsite: 
+    image: bangunsite:1.0
+    container_name: bangunsite
+    privileged: true
+    ports:
+      - "127.0.0.1:7080:80"
+      - "127.0.0.1:8080:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:80/healty"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - ./infra/nginx/default.conf:/etc/nginx/http.d/default.conf:ro
+      - ./infra/nginx/nginx.conf:/etc/nginx.conf:ro
+      - ./infra/.env:/app/.env:rw
+      - ./web:/app:rw
+      - ./data/logs:/var/log:rw
+    networks:
+      - bangunsite
+
+networks:
+  bangunsite:
+    external: true
+    name: cloudflared_bangunsoft

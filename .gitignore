@@ -1,0 +1,6 @@
+/data
+/web/vendor
+/web/composer.lock
+/web/.env
+/web/public/storage
+/template

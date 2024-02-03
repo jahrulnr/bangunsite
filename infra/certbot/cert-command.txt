@@ -1,0 +1,2 @@
+command=certbot certonly --non-interactive --agree-tos --register-unsafely-without-email --webroot -w <webpath> -d <domain>
+certpath=/etc/letsencrypt/live/

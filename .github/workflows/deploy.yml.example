@@ -1,0 +1,48 @@
+name: BangunSite Deploy Action
+
+env:
+  REGISTRY: ${{ secrets.HOST }}
+  IMAGE_NAME: bangunsite:latest
+
+on: push
+
+jobs:
+  build:
+    name: build image
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: |
+        docker build -f Dockerfile-prod --tag ${{ env.IMAGE_NAME }} .
+  
+  push:
+    name: build and push image
+    runs-on: ubuntu-latest
+    if: success() && github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Login
+      run: |
+        docker login ${{ secrets.HOST }} -u ${{ secrets.USER }} -p ${{ secrets.PASS }}
+        docker build -f Dockerfile-prod --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} .
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+  
+  deploy:
+    needs: push
+    name: deploy image
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: install ssh keys
+      run: |
+        install -m 600 -D /dev/null ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+    - name: connect and pull
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && docker compose pull && docker compose up -d && exit"
+    - name: cleanup
+      run: rm -rf ~/.ssh

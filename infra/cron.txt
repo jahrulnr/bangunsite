@@ -1,0 +1,2 @@
+# min   hour    day     month   weekday command
+#*       *       *       *       *       echo "test" > /dev/stdout

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+checkPint=`command -v pint`
+if [ -z $checkPint ]; then
+    composer global require laravel/pint
+fi
+
+files=$(git diff --cached --name-only --diff-filter=ACM -- '*.php');
+test=`pint $files`
+isFail=`echo $test | grep FAIL`
+
+echo $test
+if [ ! -z "$isFail" ]; then
+    exit 1
+fi
+
+git add $files
