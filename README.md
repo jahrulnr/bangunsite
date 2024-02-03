@@ -1,3 +1,5 @@
+![dashboard](https://raw.githubusercontent.com/jahrulnr/bangunsite/master/screenshots/dashboard.png)
+
 # BangunSite
 
 This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PHP 8.2. It provides a convenient way to manage multiple web applications within a Dockerized environment. Laravel is utilized for its powerful features in managing web applications, while Docker ensures portability and consistency across different environments.
@@ -27,6 +29,7 @@ This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PH
 
     ```bash
     git clone https://github.com/jahrulnr/bangunsite.git
+    git switch development
     ```
 
 2. Navigate to the project directory:
