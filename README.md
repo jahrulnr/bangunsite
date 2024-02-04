@@ -29,13 +29,13 @@ This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PH
 
     ```bash
     git clone https://github.com/jahrulnr/bangunsite.git
-    git switch development
     ```
 
 2. Navigate to the project directory:
 
     ```bash
     cd bangunsite
+    git switch development
     ```
 
 3. Build and start the Docker containers:
