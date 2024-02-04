@@ -8,7 +8,6 @@ up-vm: build-vm
 	if [ ! -d ./data ]; then mkdir -p ./data/logs/nginx && mkdir ./data/logs/php82; fi
 	@make precommit
 	docker-compose --compatibility up -d
-	docker-compose logs -f
 down-vm:
 	make clear-cache
 	docker-compose down --remove-orphans
