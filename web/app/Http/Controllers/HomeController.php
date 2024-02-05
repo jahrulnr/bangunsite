@@ -14,7 +14,6 @@ class HomeController extends Controller
         $cpus = Cpu::count();
         $memory = Memory::info();
         $disk = bytesReadable(disk_total_space('/'));
-        // dd($_SERVER);
 
         return view('Home.index', compact('countSite', 'cpus', 'memory', 'disk'));
     }

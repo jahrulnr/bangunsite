@@ -45,7 +45,6 @@ class WebsiteManagerController extends Controller
                 if (is_file($path)) {
                     return 'Path is file!';
                 }
-                is_dir($path) ?: mkdir($path, 755, true);
 
                 return 'success';
             } catch (\Exception $e) {
@@ -65,10 +64,11 @@ class WebsiteManagerController extends Controller
             return back()->with('error', $validate);
         }
 
+        $input = $r->only((new Website)->getFillable());
         if ($r->name == null) {
-            $r->name = $r->domain;
+            $input['name'] = $r->domain;
         }
-        $website = Website::create($r->only((new Website)->getFillable()));
+        $website = Website::create($input);
 
         if (! $website) {
             return back()->with('error', 'Fail to save website data');
@@ -80,5 +80,18 @@ class WebsiteManagerController extends Controller
     public function update(Request $r)
     {
 
+    }
+
+    public function destroy($id, Request $r)
+    {
+        $website = Website::find($id);
+        if ($website->doesntExists()) {
+            return back()->with('error', "Website doesn't exists!");
+        }
+
+        $website::removeSite($website, $r->clean);
+        $website->delete();
+
+        return back()->with('success', 'Website deleted successfully');
     }
 }
