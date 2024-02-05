@@ -1,6 +1,12 @@
 #!/bin/bash
 
+export PATH="$PATH:/home/$USER/.config/composer/vendor/bin/"
+checkComposer=`command -v composer`
 checkPint=`command -v pint`
+if [ -z $checkComposer ]; then
+    echo "Please install composer before commit your changes!\n"
+    exit 1
+fi
 if [ -z $checkPint ]; then
     composer global require laravel/pint
 fi

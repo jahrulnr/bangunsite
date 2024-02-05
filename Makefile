@@ -1,6 +1,14 @@
 VMTag=bangunsite:1.0
 VMName=bangunsite
 
+install:
+### makesure to make down-vm before run this command
+###	sudo rm -r data template web/vendor web/.env web/tmp
+	@make up-vm
+	@make cp-db
+	@docker exec -i bangunsite artisan key:generate
+	@make migrate
+
 build-vm:
 	docker build . --tag ${VMTag}
 up-vm: build-vm
@@ -8,6 +16,7 @@ up-vm: build-vm
 	if [ ! -d ./data ]; then mkdir -p ./data/logs/nginx && mkdir ./data/logs/php82; fi
 	@make precommit
 	docker-compose --compatibility up -d
+###	docker-compose logs -f
 down-vm:
 	make clear-cache
 	docker-compose down --remove-orphans

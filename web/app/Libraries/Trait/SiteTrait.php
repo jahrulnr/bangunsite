@@ -2,8 +2,10 @@
 
 namespace App\Libraries\Trait;
 
+use App\Libraries\Commander;
 use App\Libraries\Disk;
 use App\Models\Website;
+use Illuminate\Support\Facades\Session;
 
 trait SiteTrait
 {
@@ -13,6 +15,8 @@ trait SiteTrait
 
     public static $activePath = '/storage/webconfig/active.d';
 
+    public static $defaultPath = '/www/default';
+
     public static function getBaseConfig(): string
     {
         return file_get_contents(base_path().self::$baseConfig);
@@ -20,7 +24,10 @@ trait SiteTrait
 
     public static function getActiveConfigPath(string $domain): string
     {
-        return base_path().self::$activePath.'/'.$domain.'.conf';
+        $path = base_path().self::$activePath;
+        is_dir($path) or mkdir($path, 0750, true);
+
+        return $path.'/'.$domain.'.conf';
     }
 
     public static function getConfigPath(string $domain): string
@@ -48,6 +55,11 @@ trait SiteTrait
             $replacement["<{$key}>"] = $value;
         }
 
+        is_dir($attributes['path']) ?: mkdir($attributes['path'], 755, true);
+        $indexFile = $attributes['path'].'/index.html';
+        copy(static::$defaultPath.'/index.html', $indexFile);
+        Commander::exec("chown -R nginx:nginx {$attributes['path']}");
+
         return Disk::createFile(
             self::getConfigPath($domain),
             str_replace(array_keys($replacement), array_values($replacement), self::getBaseConfig())
@@ -57,7 +69,7 @@ trait SiteTrait
     public static function enableSite(string $domain, bool $enable = true): bool
     {
         $site = Website::getSite($domain)->first();
-        $configPath = self::getSiteConfig($domain);
+        $configPath = self::getConfigPath($domain);
         $enablePath = self::getActiveConfigPath($domain);
         if (is_file($configPath) && $enable) {
             $result = symlink($configPath, $enablePath);
@@ -67,8 +79,21 @@ trait SiteTrait
             $result = unlink($enablePath);
             $site->active = false;
             $site->save();
+        } else {
+            Session::flash('warning', 'Website already enabled');
+
+            return true;
         }
 
         return $result ?? false;
+    }
+
+    public function removeSite(Website $data, $remove): void
+    {
+        if ($remove !== null || $remove !== false) {
+            Disk::rm($data->path);
+        }
+        static::enableSite($data->domain, false);
+        unlink(self::getConfigPath($data->domain));
     }
 }

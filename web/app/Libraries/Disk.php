@@ -62,4 +62,29 @@ class Disk
 
         return $result ?? false;
     }
+
+    public static function rm(string $path, bool $recursive = false)
+    {
+        if ($recursive === false || $recursive === null) {
+            if (is_dir($path)) {
+                rmdir($path);
+            } elseif (is_file($path) || is_link($path)) {
+                unlink($path);
+            }
+        } else {
+            if (is_dir($path)) {
+                $files = scandir($path);
+                foreach ($files as $file) {
+                    if ($file != '.' && $file != '..') {
+                        if (is_dir($path.DIRECTORY_SEPARATOR.$file) && ! is_link($path.'/'.$file)) {
+                            static::rm($path.DIRECTORY_SEPARATOR.$file);
+                        } else {
+                            unlink($path.DIRECTORY_SEPARATOR.$file);
+                        }
+                    }
+                }
+                static::rm($path);
+            }
+        }
+    }
 }

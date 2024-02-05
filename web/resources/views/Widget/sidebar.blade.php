@@ -15,7 +15,7 @@
                 class="img-circle elevation-2" alt="User Image" referrerpolicy="no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|unsafe-url">
             </div>
             <div class="info">
-                <a href="#" class="d-block">Jahrulnr</a>
+                <a href="#" class="d-block">{{auth()->user()?->name}}</a>
             </div>
         </div>
 
@@ -50,11 +50,12 @@
                         </p>
                     </a>
                 </li>
+                <li class="nav-header"></li>
                 <li class="nav-item">
                     <a href="{{route('lockscreen')}}" class="nav-link">
-                        <i class="nav-icon fas fa-globe"></i>
+                        <i class="nav-icon fas fa-lock"></i>
                         <p>
-                            Logout
+                            Sign out
                         </p>
                     </a>
                 </li>

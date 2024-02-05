@@ -115,6 +115,9 @@
 @if ($msg = session('success'))
 <script src="{{asset('assets/plugins/toastr/toastr.min.js')}}"></script>
 <script>toastr.success("{{$msg}}")</script>
+@elseif ($msg = session('warning'))
+<script src="{{asset('assets/plugins/toastr/toastr.min.js')}}"></script>
+<script>toastr.warning("{{$msg}}")</script>
 @elseif ($msg = session('error'))
 <script src="{{asset('assets/plugins/toastr/toastr.min.js')}}"></script>
 <script>toastr.error("{{$msg}}")</script>
