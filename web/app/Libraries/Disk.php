@@ -87,4 +87,17 @@ class Disk
             }
         }
     }
+
+    public static function bytesReadable(int $bytes)
+    {
+        $symbols = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+        $exp = floor(log($bytes) / log(1024));
+
+        return sprintf('%.1f'.$symbols[$exp], ($bytes / pow(1024, floor($exp))));
+    }
+
+    public static function validatePath(string $path): bool
+    {
+        return strpbrk($path, '\\?%*:|"<>') === false;
+    }
 }

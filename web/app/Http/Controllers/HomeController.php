@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Libraries\Cpu;
+use App\Libraries\Disk;
 use App\Libraries\Memory;
 use App\Models\Website;
 
@@ -13,7 +14,7 @@ class HomeController extends Controller
         $countSite = Website::count();
         $cpus = Cpu::count();
         $memory = Memory::info();
-        $disk = bytesReadable(disk_total_space('/'));
+        $disk = Disk::bytesReadable(disk_total_space('/'));
 
         return view('Home.index', compact('countSite', 'cpus', 'memory', 'disk'));
     }

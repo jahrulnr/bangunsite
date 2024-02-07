@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Libraries\Disk;
 use App\Models\Website;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -35,7 +36,7 @@ class WebsiteManagerController extends Controller
         }
 
         $path = $r->get('path');
-        if (! validatePath($path)) {
+        if (! Disk::validatePath($path)) {
             return 'Path have illegal character!';
         }
 

@@ -2,6 +2,8 @@
 
 namespace App\Libraries;
 
+use App\Models\Website;
+
 class Nginx
 {
     public static function test(string $domain = '')
@@ -28,5 +30,20 @@ class Nginx
         } else {
             return $result[0];
         }
+    }
+
+    public static function restart(): void
+    {
+        Commander::exec('nginx -s reload');
+    }
+
+    public static function moveRoot(Website $model, array $attributes): bool
+    {
+        return false;
+    }
+
+    public static function moveDomain(Website $model, array $attributes): bool
+    {
+        return false;
     }
 }

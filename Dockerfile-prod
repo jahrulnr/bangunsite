@@ -45,7 +45,7 @@ RUN chmod +x /app/artisan
 
 WORKDIR /app
 USER nginx
-RUN composer update --no-dev && rm -rf ~/.composer
+RUN composer update --no-dev --no-cache --optimize-autoloader
 RUN if [ ! -f /app/public/storage ] && [ ! -d /app/public/storage ]; then php artisan storage:link; fi
 USER root
 
