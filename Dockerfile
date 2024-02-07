@@ -24,7 +24,7 @@ RUN apk update && apk add --no-cache curl bash bash-completion shadow \
     && apk del shadow git \
     && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
     && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer \
-    && rm -rf /tmp/* /var/cache/apk/*
+    && rm -rf /tmp/* /var/cache/apk/* ~/.cache
 
 COPY ./infra/cron.txt /tmp/
 RUN cat /tmp/cron.txt >> /etc/crontabs/root && rm /tmp/cron.txt
@@ -48,7 +48,7 @@ RUN chmod +x /app/artisan
 
 WORKDIR /app
 USER nginx
-RUN composer update && rm -rf ~/.composer
+RUN composer update --no-cache --optimize-autoloader
 RUN if [ ! -f /app/public/storage ] && [ ! -d /app/public/storage ]; then php artisan storage:link; fi
 USER root
 

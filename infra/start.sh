@@ -15,9 +15,8 @@ if [ ! -d /var/log/php/ ]; then
 fi
 
 if [ ! -d /app/vendor ]; then
-    composer update
+    composer update --no-cache --optimize-autoloader
     chown -R nginx: /app/vendor
 fi
 
-supervisord -n -c /etc/supervisord.conf || \
-    tail -f /var/log/nginx/error.log
+supervisord -n -c /etc/supervisord.conf

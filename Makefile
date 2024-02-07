@@ -13,9 +13,16 @@ build-vm:
 	docker build . --tag ${VMTag}
 up-vm: build-vm
 	if [ -z `docker network ls -qf name=cloudflared_bangunsoft` ]; then docker network create -d bridge cloudflared_bangunsoft; fi
-	if [ ! -d ./data ]; then mkdir -p ./data/logs/nginx && mkdir ./data/logs/php82; fi
+	if [ ! -d ./data ]; then \
+		mkdir -p ./data/logs/nginx \
+		&& mkdir ./data/logs/php82 \
+		&& mkdir ./data/grafana/lib \
+		&& mkdir ./data/grafana/provisioning; \
+	fi
 	@make precommit
 	docker-compose --compatibility up -d
+restart-vm:
+	docker-compose down && docker-compose up -d
 ###	docker-compose logs -f
 down-vm:
 	make clear-cache
