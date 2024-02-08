@@ -166,7 +166,7 @@
                 diskIO()
                 serverInfo()
                 serverTraffic()
-            }, 1000);
+            }, 5000);
         })
     }
 

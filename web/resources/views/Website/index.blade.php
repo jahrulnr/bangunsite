@@ -69,7 +69,7 @@
                         <td align="middle" class="w-auto text-nowrap">
                             <data style="display: none" id="{{$data->domain}}">{!! json_encode($data) !!}</data>
                             <div class="btn-group" data-site="{{$data->domain}}">
-                                <a href="#" class="btn btn-sm btn-primary" data-act="site-config">Config</a>
+                                <a href="{{route('website.edit', $data->domain)}}" class="btn btn-sm btn-primary" data-act="site-config">Config</a>
                                 <a href="#" class="btn btn-sm btn-warning" data-act="site-disable">Disable</a>
                                 <a href="#" class="btn btn-sm btn-danger" data-act="site-delete">Delete</a>
                             </div>

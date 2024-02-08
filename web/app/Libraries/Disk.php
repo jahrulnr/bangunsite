@@ -63,6 +63,22 @@ class Disk
         return $result ?? false;
     }
 
+    public static function cp($src, $dst)
+    {
+        $dir = opendir($src);
+        @mkdir($dst);
+        while (false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..')) {
+                if (is_dir($src.'/'.$file)) {
+                    self::cp($src.'/'.$file, $dst.'/'.$file);
+                } else {
+                    copy($src.'/'.$file, $dst.'/'.$file);
+                }
+            }
+        }
+        closedir($dir);
+    }
+
     public static function rm(string $path, bool $recursive = false)
     {
         if ($recursive === false || $recursive === null) {

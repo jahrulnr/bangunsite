@@ -19,10 +19,10 @@ services:
       retries: 5
       start_period: 30s
     volumes:
+      - ./web:/app:rw
       - ./infra/nginx/default.conf:/etc/nginx/http.d/default.conf:ro
       - ./infra/nginx/nginx.conf:/etc/nginx.conf:ro
       - ./infra/.env:/app/.env:rw
-      - ./web:/app:rw
       - ./data/logs:/var/log:rw
     networks:
       - bangunsite

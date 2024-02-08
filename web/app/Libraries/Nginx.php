@@ -39,11 +39,49 @@ class Nginx
 
     public static function moveRoot(Website $model, array $attributes): bool
     {
-        return false;
+        $from = $model->path;
+        $to = $attributes['path'];
+        if (! file_exists(dirname($to))) {
+            mkdir(dirname($to), 755, true);
+        }
+
+        Disk::cp($from, $to);
+        Disk::rm($from, true);
+        $configPath = Site::getConfigPath($model->domain);
+        $config = Site::getSiteConfig($model->domain);
+        $config = str_replace($from, $to, $config);
+        $result = file_put_contents($configPath, $config);
+        self::restart();
+
+        return $result;
     }
 
     public static function moveDomain(Website $model, array $attributes): bool
     {
-        return false;
+        $from = $model->domain;
+        $to = $attributes['domain'];
+
+        $model::enableSite($from, false);
+
+        $oldConfigPath = Site::getConfigPath($from);
+        $newConfigPath = Site::getConfigPath($to);
+        $config = Site::getSiteConfig($from);
+        $config = str_replace(
+            'server_name '.$from,
+            'server_name '.$to,
+            $config);
+        $result = Disk::createFile($newConfigPath, $config);
+
+        if (! $result) {
+            return false;
+        }
+
+        Disk::rm($oldConfigPath);
+        if (isset($attributes['active']) && $attributes['active'] == true) {
+            $model::enableSite($to);
+            self::restart();
+        }
+
+        return true;
     }
 }

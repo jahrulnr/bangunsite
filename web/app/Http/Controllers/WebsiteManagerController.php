@@ -17,7 +17,7 @@ class WebsiteManagerController extends Controller
         return view('Website.index', compact('website'));
     }
 
-    public function check(Request $r): string
+    public function check(Request $r, $id = null): string
     {
         $validate = Validator::make([
             'domain' => 'string|required',
@@ -40,8 +40,8 @@ class WebsiteManagerController extends Controller
             return 'Path have illegal character!';
         }
 
-        $pathExists = Website::where('path', $path)->exists();
-        if (! $pathExists) {
+        $site = Website::where('path', $path);
+        if (! $site->exists() || ($id != null && ! $site->where('id', '!=', $id)->exists())) {
             try {
                 if (is_file($path)) {
                     return 'Path is file!';
@@ -78,9 +78,41 @@ class WebsiteManagerController extends Controller
         return back()->with('success', $r->domain.' created');
     }
 
-    public function update(Request $r)
+    public function edit($domain)
     {
+        $site = Website::getSite($domain);
+        if (! $site->exists()) {
+            return back()->with('error', "Site doesn't exists");
+        }
 
+        $site = $site->first();
+
+        return view('Website.edit', compact('site'));
+    }
+
+    public function update($id, Request $r)
+    {
+        $site = Website::find($id);
+        if (! $site->exists()) {
+            return back()->with('error', "Site doesn't exists");
+        }
+
+        $validate = $this->check($r, $id);
+        if ($validate !== 'success') {
+            return back()->with('error', $validate);
+        }
+
+        $input = $r->only((new Website)->getFillable());
+        if ($r->name == null) {
+            $input['name'] = $r->domain;
+        }
+
+        $site = $site->first();
+        if ($site->update($r->only($site->getFillable()))) {
+            return redirect(route('website.edit', $r->domain))->with('success', 'Update successfully');
+        }
+
+        return redirect(route('website.edit', $r->domain))->with('error', 'Update failed');
     }
 
     public function destroy($id, Request $r)
