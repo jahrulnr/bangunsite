@@ -38,7 +38,7 @@ class HomeController extends Controller
 
         $loads = sys_getloadavg();
         $core_nums = trim(shell_exec("grep -E '^processor' /proc/cpuinfo|wc -l"));
-        $load = round($loads[0] / ($core_nums + 1) * 100, 2);
+        $load = round($loads[0] / $core_nums * 100, 2);
 
         $storage = null;
         exec('df | grep overlay', $storage);

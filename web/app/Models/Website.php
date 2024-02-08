@@ -42,12 +42,13 @@ class Website extends Model
 
     public function update(array $attributes = [], array $options = [])
     {
+        $result = true;
         if ($this instanceof Website
-        && $this->exists) {
+        && $this->exists()) {
             $pathExists = Website::where('path', $attributes['path'])
-                ->where('id', '!=', $this->id)->exists;
+                ->where('id', '!=', $this->id)->exists();
             $domainExists = Website::getSite($attributes['domain'])
-                ->where('id', '!=', $this->id)->exists;
+                ->where('id', '!=', $this->id)->exists();
 
             if ($pathExists || $domainExists) {
                 return $pathExists
@@ -56,20 +57,25 @@ class Website extends Model
             }
 
             if ($this->path != $attributes['path']) {
-                Nginx::moveRoot($this, $attributes);
+                $result = Nginx::moveRoot($this, $attributes);
             }
             if ($this->domain != $attributes['domain']) {
-                Nginx::moveDomain($this, $attributes);
+                $result = Nginx::moveDomain($this, $attributes);
             }
+
+            self::enableSite($this->domain, ! $attributes['active']);
+            Nginx::restart();
         } elseif ($this instanceof Collection) {
             // sorry, multiple update website configuration is not good idea
             return false;
         }
 
-        return $this->fill($attributes)->save($options);
+        return $result == true
+            ? $this->fill($attributes)->save($options)
+            : false;
     }
 
-    public static function getSite(string $domain): \Illuminate\Database\Eloquent\Builder
+    public static function getSite(string $domain)
     {
         return self::where('domain', $domain);
     }

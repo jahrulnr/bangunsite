@@ -68,17 +68,12 @@ trait SiteTrait
 
     public static function enableSite(string $domain, bool $enable = true): bool
     {
-        $site = Website::getSite($domain)->first();
         $configPath = self::getConfigPath($domain);
         $enablePath = self::getActiveConfigPath($domain);
         if (is_file($configPath) && $enable) {
             $result = symlink($configPath, $enablePath);
-            $site->active = true;
-            $site->save();
         } elseif ($enable == false && (is_link($enablePath) || is_file($enablePath))) {
             $result = unlink($enablePath);
-            $site->active = false;
-            $site->save();
         } else {
             Session::flash('warning', 'Website already enabled');
 
