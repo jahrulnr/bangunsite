@@ -145,7 +145,7 @@
         })
     }
 
-    let netIn = 0, netOut = 0
+    let netIn = {{$network['in']['eth0']}}, netOut = {{$network['out']['eth0']}}
     function serverTraffic() {
         $.ajax({
             url: "{{route('server.traffic')}}",

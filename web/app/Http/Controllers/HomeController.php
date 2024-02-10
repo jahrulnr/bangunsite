@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Libraries\Cpu;
 use App\Libraries\Disk;
 use App\Libraries\Memory;
+use App\Libraries\Network;
 use App\Models\Website;
 
 class HomeController extends Controller
@@ -15,8 +16,9 @@ class HomeController extends Controller
         $cpus = Cpu::count();
         $memory = Memory::info();
         $disk = Disk::bytesReadable(disk_total_space('/'));
+        $network = Network::traffic();
 
-        return view('Home.index', compact('countSite', 'cpus', 'memory', 'disk'));
+        return view('Home.index', compact('countSite', 'cpus', 'memory', 'disk', 'network'));
     }
 
     public function info()

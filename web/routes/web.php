@@ -19,4 +19,9 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/website/{id}/updateSSL', [WebsiteManagerController::class, 'updateSSL'])->name('website.updateSSL');
 
     Route::get('/browse', [FileManagerController::class, 'index'])->name('filemanager');
+    Route::post('/browse/new', [FileManagerController::class, 'new'])->name('filemanager.new');
+
+    Route::get('/phpinfo', function () {
+        phpinfo();
+    });
 });

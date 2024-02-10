@@ -2,16 +2,37 @@
 @section('modal-id', 'new-object')
 @section('modal-title', 'New File/Directory')
 
+@push('css')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/dracula.min.css" integrity="sha512-gFMl3u9d0xt3WR8ZeW05MWm3yZ+ZfgsBVXLSOiFz2xeVrZ8Neg0+V1kkRIo9LikyA/T9HuS91kDfc2XWse0K0A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+@endpush
+@push('js')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js" integrity="sha512-8RnEqURPUc5aqFEN04aQEiPlSAdE0jlFS/9iGgUyNtwFnSKCXhmB6ZTNl7LnDtDWKabJIASzXrzD0K+LYexU9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/nginx/nginx.min.js" integrity="sha512-kgLrmRot2x/yBR/HMHKt1S1Q0gIFOt6JGwAqrowCFxtal0MLUrqwzOu1YUA59Uds85K/1dnw9xZrXCs/5FAFJQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+var editor = CodeMirror.fromTextArea(document.getElementById('content'), {
+  lineNumbers: true,
+  mode: 'text',
+  theme: 'dracula'
+});
+$('#vert-new-file').click(function(){
+	setTimeout(() => {
+		editor.refresh()
+	}, 200);
+})
+</script>
+@endpush
+
 @section('modal-body')
 @csrf
 <div class="row">
   <div class="col-5 col-sm-3">
     <div class="nav flex-column nav-tabs h-100" id="vert-tabs-tab" role="tablist" aria-orientation="vertical">
-      <a class="nav-link text-light active" id="vert-new-file" data-toggle="pill" href="#vert-tab-new-file" role="tab" aria-controls="vert-tab-new-file" aria-selected="true">
-        New File
-      </a>
-      <a class="nav-link text-light" id="vert-new-directory" data-toggle="pill" href="#vert-tab-directory" role="tab" aria-controls="vert-tab-directory" aria-selected="false">
+      <a class="nav-link text-light active" id="vert-new-directory" data-toggle="pill" href="#vert-tab-directory" role="tab" aria-controls="vert-tab-directory" aria-selected="false">
         New Directory
+      </a>
+      <a class="nav-link text-light" id="vert-new-file" data-toggle="pill" href="#vert-tab-new-file" role="tab" aria-controls="vert-tab-new-file" aria-selected="true">
+        New File
       </a>
       <a class="nav-link text-light" id="vert-remote-download" data-toggle="pill" href="#vert-tab-remote-download" role="tab" aria-controls="vert-tab-remote-download" aria-selected="false">
         Remote Download
@@ -23,31 +44,112 @@
   </div>
   <div class="col-7 col-sm-9">
     <div class="tab-content" id="vert-tabs-tabContent">
-      <div class="tab-pane text-left fade show active" id="vert-tab-new-file" role="tabpanel" aria-labelledby="vert-new-file">
+      <form action="{{route('filemanager.new')}}" method="POST" class="tab-pane text-left fade show active" id="vert-tab-directory" role="tabpanel" aria-labelledby="vert-new-directory">
         <div class="mb-3">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin malesuada lacus ullamcorper dui molestie, sit amet congue quam finibus. Etiam ultricies nunc non magna feugiat commodo. Etiam odio magna, mollis auctor felis vitae, ullamcorper ornare ligula. Proin pellentesque tincidunt nisi, vitae ullamcorper felis aliquam id. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Proin id orci eu lectus blandit suscipit. Phasellus porta, ante et varius ornare, sem enim sollicitudin eros, at commodo leo est vitae lacus. Etiam ut porta sem. Proin porttitor porta nisl, id tempor risus rhoncus quis. In in quam a nibh cursus pulvinar non consequat neque. Mauris lacus elit, condimentum ac condimentum at, semper vitae lectus. Cras lacinia erat eget sapien porta consectetur.
+          @csrf
+          <input type="hidden" name="type" value="directory">
+          <input type="hidden" name="base" value="{{$fullPath}}">
+          <div class="form-group mb-3">
+            <label>Directory Name</label>
+            <input type="text" name="name" value="" class="form-control" placeholder="Directory name" required>
+          </div>
+          <div class="form-group mb-3">
+            <label>Permission</label>
+            <input type="number" min="700" max="777" name="permission" value="755" class="form-control" required>
+          </div>
         </div>
         <button class="btn btn-primary" type="submit">Create</button>
-      </div>
-      <div class="tab-pane fade" id="vert-tab-directory" role="tabpanel" aria-labelledby="vert-new-directory">
+      </form>
+      <form action="{{route('filemanager.new')}}" method="POST" class="tab-pane fade" id="vert-tab-new-file" role="tabpanel" aria-labelledby="vert-new-file">
         <div class="mb-3">
-          Mauris tincidunt mi at erat gravida, eget tristique urna bibendum. Mauris pharetra purus ut ligula tempor, et vulputate metus facilisis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Maecenas sollicitudin, nisi a luctus interdum, nisl ligula placerat mi, quis posuere purus ligula eu lectus. Donec nunc tellus, elementum sit amet ultricies at, posuere nec nunc. Nunc euismod pellentesque diam.
+          @csrf
+          <input type="hidden" name="type" value="file">
+          <input type="hidden" name="base" value="{{$fullPath}}">
+          <div class="form-group mb-3">
+            <label>File Name</label>
+            <input type="text" name="name" value="" class="form-control" placeholder="File name" required>
+          </div>
+          <div class="form-group mb-3">
+            <label>Content</label>
+            <textarea name="content" id="content"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <label>Permission</label>
+            <input type="number" min="600" max="777" name="permission" value="644" class="form-control" required>
+          </div>
         </div>
         <button class="btn btn-primary" type="submit">Create</button>
-      </div>
-      <div class="tab-pane fade" id="vert-tab-remote-download" role="tabpanel" aria-labelledby="vert-remote-download">
+      </form>
+      <form action="{{route('filemanager.new')}}" method="POST"  class="tab-pane fade" id="vert-tab-remote-download" role="tabpanel" aria-labelledby="vert-remote-download">
         <div class="mb-3">
-          Morbi turpis dolor, vulputate vitae felis non, tincidunt congue mauris. Phasellus volutpat augue id mi placerat mollis. Vivamus faucibus eu massa eget condimentum. Fusce nec hendrerit sem, ac tristique nulla. Integer vestibulum orci odio. Cras nec augue ipsum. Suspendisse ut velit condimentum, mattis urna a, malesuada nunc. Curabitur eleifend facilisis velit finibus tristique. Nam vulputate, eros non luctus efficitur, ipsum odio volutpat massa, sit amet sollicitudin est libero sed ipsum. Nulla lacinia, ex vitae gravida fermentum, lectus ipsum gravida arcu, id fermentum metus arcu vel metus. Curabitur eget sem eu risus tincidunt eleifend ac ornare magna.
+          @csrf
+          <input type="hidden" name="type" value="remote">
+          <input type="hidden" name="base" value="{{$fullPath}}">
+          <div class="form-group mb-3">
+            <label>File Name</label>
+            <input type="text" name="name" value="" class="form-control" placeholder="File name" required>
+          </div>
+          <div class="form-group mb-3">
+            <label>URL</label>
+            <input type="url" name="url" value="" class="form-control" placeholder="URL" required>
+          </div>
+          <div class="form-group mb-3">
+            <label>Permission</label>
+            <input type="number" min="600" max="777" name="permission" value="644" class="form-control" required>
+          </div>
         </div>
-        <button class="btn btn-primary" type="submit">Create</button>
-      </div>
-      <div class="tab-pane fade" id="vert-tab-upload-file" role="tabpanel" aria-labelledby="vert-upload-file">
+        <button class="btn btn-primary" type="submit">Start</button>
+      </form>
+      <form action="{{route('filemanager.new')}}" method="POST" enctype="multipart/form-data" class="tab-pane fade" id="vert-tab-upload-file" role="tabpanel" aria-labelledby="vert-upload-file">
         <div class="mb-3">
-          Morbi turpis dolor, vulputate vitae felis non, tincidunt congue mauris. Phasellus volutpat augue id mi placerat mollis. Vivamus faucibus eu massa eget condimentum. Fusce nec hendrerit sem, ac tristique nulla. Integer vestibulum orci odio. Cras nec augue ipsum. Suspendisse ut velit condimentum, mattis urna a, malesuada nunc. Curabitur eleifend facilisis velit finibus tristique. Nam vulputate, eros non luctus efficitur, ipsum odio volutpat massa, sit amet sollicitudin est libero sed ipsum. Nulla lacinia, ex vitae gravida fermentum, lectus ipsum gravida arcu, id fermentum metus arcu vel metus. Curabitur eget sem eu risus tincidunt eleifend ac ornare magna.
+          @csrf
+          <input type="hidden" name="type" value="upload">
+          <input type="hidden" name="base" value="{{$fullPath}}">
+          <div class="form-group mb-3">
+            <label>File</label>
+            <input type="file" name="file" value="" class="form-control" placeholder="File" required>
+            <span class="text-muted">File max. {{ini_get('upload_max_filesize')}}</span>
+          </div>
+          <div class="form-group mb-3">
+            <label>Permission</label>
+            <input type="number" min="600" max="777" name="permission" value="644" class="form-control" required>
+          </div>
+          <div id="upload-proggress" class="fade mb-3" style="display: none">
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+            </div>
+          </div>
         </div>
-        <button class="btn btn-primary" type="submit">Create</button>
-      </div>
+        <button class="btn btn-primary" type="submit">Upload</button>
+      </form>
     </div>
   </div>
 </div>
 @endsection
+
+@push('js')
+<script src="{{asset('assets/plugins/jquery/jquery.form.min.js')}}"></script>
+<script>
+$(document).ready(function () {
+  $('#vert-tab-upload-file').ajaxForm({
+    beforeSend: function (data, myForm) {
+      var percentage = '0';
+      $('#upload-proggress').show().addClass('show')
+      $('.progress .progress-bar').css("width", percentage+'%', function() {
+        return $(this).attr("aria-valuenow", percentage) + "%";
+      })
+    },
+    uploadProgress: function (event, position, total, percentComplete) {
+      $('.progress .progress-bar').css("width", percentComplete+'%', function() {
+        return $(this).attr("aria-valuenow", percentComplete) + "%";
+      })
+    },
+    complete: function (xhr) {
+      $('.progress .progress-bar').css("width", '100%', function() {
+        return $(this).attr("aria-valuenow", 100) + "%";
+      })
+    }
+  });
+});
+</script>
+@endpush

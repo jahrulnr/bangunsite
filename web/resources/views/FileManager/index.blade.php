@@ -1,5 +1,5 @@
 @extends('layout')
-@section('head', 'FileManager')
+@section('head', 'File Manager')
 
 @push('css')
 <style>
@@ -17,6 +17,9 @@
             Path: <span id="path">{{$fullPath}}</span>
         </div>
         <div class="btn-group">
+            <button class="btn btn-default btn-sm" onclick="window.location.reload()">
+                {!! setIcon('fas fa-sync-alt text-sm') !!}
+            </button>
             <button class="btn btn-default btn-sm" data-toggle="modal" data-target="#new-object">
                 New
             </button>
@@ -25,34 +28,42 @@
     <ul class="list-group">
         @foreach ($browse as $list)
             @php
-                $is_link = $list[4] !== true;
-                $shortlink = strlen($list[4]) > 20;
+                $is_link = $list['link'] !== true;
+                $shortlink = strlen($list['link']) > 20;
                 $linked = $is_link && $shortlink 
-                    ? '-> <span class="text-primary">...'. substr($list[4], -20) ."</span>"
+                    ? '-> <span class="text-primary">...'. substr($list['link'], -20) ."</span>"
                     : ($is_link 
-                    ? '-> <span class="text-primary">...'. $list[4] ."</span>"
-                    : '')
+                    ? '-> <span class="text-primary">...'. $list['link'] ."</span>"
+                    : '');
+                
+                $filepath = str_replace('//', '/', $fullPath.'/'.$list['name']);
+                $mime = is_file($filepath) ? mime_content_type($filepath) : false;
             @endphp
             <li class="list-group-item">
                 <div class="row">
-                    <div class="col-12 col-md-auto">
-                        <span class="text-sm">{!! $list[2] !!} [{{$list[3]}}]</span>
-                        <span class="{{ $list[1] == 'file' && preg_match('/77(7|5)/', $list[3])?'text-success':'' }}">
-                            @if ($list[1] == 'directory')
-                            <a href="{{route('filemanager')}}?path={{str_replace('//', '/', $fullPath.'/'.$list[0])}}" class="text-sm" style="color: unset !important">
-                                {{ $list[0] }} {!! $linked !!}
-                            </a>
-                            @else
-                            <span class="text-sm">{{ $list[0] }} {!! $linked !!}</span>
+                    <div class="col-12 col-md-auto" {!! $list['type'] == 'directory' ? "onclick=\"window.location.assign('".route('filemanager')."?path={$filepath}')\" style=\"cursor: pointer\"" : '' !!}>
+                        <span class="text-sm">
+                            {!! $list['icon'] !!}
+                            @if ($list['name'] != '..') 
+                            [{{$list['permission']}}]
                             @endif
+                        </span>
+                        <span class="{{ $list['type'] == 'file' && preg_match('/77(7|5)/', $list['permission'])?'text-success':'' }}">
+                            <span class="text-sm">{{ $list['name'] }} {!! $linked !!}</span>
+                            {{-- {{$mime}} --}}
                         </span>
                     </div>
                     <div class="col-12 col-md-auto my-auto ml-auto">
-                        @if($list[1] == 'file')
-                        <a href="#readfile" class="readfile text-sm text-white" data-file="{{$list[0]}}">View</a> |
-                        <a href="#copyfile" class="copyfile text-sm text-white" data-file="{{$list[0]}}">Copy</a> |
-                        <a href="#chmodfile" class="chmodfile text-sm text-white" data-file="{{$list[0]}}">Chmod</a> |
-                        <a href="#deletefile" class="deletefile text-sm text-white" data-file="{{$list[0]}}">Delete</a>
+                        @if ($list['name'] != '..')
+                            @if ($list['type'] == 'file')
+                            <span class="text-sm">[{{ $list['size'] }}]</span>
+                            @if (str_starts_with($mime, 'text') || str_contains($mime, 'json'))
+                            <a href="#readfile" class="readfile text-sm text-white" data-file="{{$list['name']}}">View</a> |
+                            @endif
+                            @endif
+                            <a href="#copyfile" class="copyfile text-sm text-white" data-file="{{$list['name']}}">Copy</a> |
+                            <a href="#chmodfile" class="chmodfile text-sm text-white" data-file="{{$list['name']}}">Chmod</a> |
+                            <a href="#deletefile" class="deletefile text-sm text-white" data-file="{{$list['name']}}">Delete</a>                            
                         @endif
                     </div>
                 </div>

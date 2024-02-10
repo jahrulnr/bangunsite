@@ -7,8 +7,13 @@ function setIcon(string $icon): string
 
 function setIconByType($path): string
 {
-    $ext = explode('.', basename($path));
-    $ext = end($ext);
+    $basename = basename($path);
+    if (! str_contains($basename, '.') && $basename != 'artisan') {
+        return setIcon('far fa-file fa-sm');
+    }
+
+    $ext = explode('.', $basename);
+    $ext = count($ext) > 2 ? $ext[count($ext) - 2].'.'.end($ext) : end($ext);
 
     if (preg_match('/(php)/i', $ext)) {
         return setIcon('fab fa-php text-info fa-sm');
@@ -25,6 +30,9 @@ function setIconByType($path): string
     if (preg_match('/(css)/i', $ext)) {
         return setIcon('fab fa-css3 text-info fa-sm');
     }
+    if (preg_match('/(sql)/i', $ext)) {
+        return setIcon('fas fa-database text-warning fa-sm');
+    }
     if (preg_match('/(sh|bash|batch)/i', $ext)) {
         return setIcon('fas fa-terminal text-danger fa-sm');
     }
@@ -35,10 +43,13 @@ function setIconByType($path): string
     if (preg_match('/(artisan)/i', $ext)) {
         return setIcon('fab fa-laravel text-danger fa-sm');
     }
+    if (preg_match('/log/i', $ext)) {
+        return setIcon('fas fa-list-alt text-warning fa-sm');
+    }
     if (preg_match('/(zip|rar|gz|bz|tar|7z)/i', $ext)) {
         return setIcon('fas fa-archive fa-sm');
     }
-    if (preg_match('/(conf|env|example)/i', $ext)) {
+    if (preg_match('/(conf|env|example|htaccess)/i', $ext)) {
         return setIcon('fas fa-cog text-info fa-sm');
     }
     if (preg_match('/(bk|backup)/i', $ext)) {

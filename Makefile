@@ -23,7 +23,8 @@ up-vm: build-vm
 	docker-compose --compatibility up -d bangunsite
 restart-vm:
 	docker-compose down && docker-compose up -d bangunsite
-###	docker-compose logs -f
+logs-vm:
+	docker-compose logs -f -n 100
 down-vm:
 	make clear-cache
 	docker-compose down --remove-orphans
@@ -59,3 +60,12 @@ precommit:
 
 force-composer:
 	cp infra/platform_check.php web/vendor/composer/
+
+setup-prod:
+	cp -r infra prod/
+	chmod +x web/artisan
+	sed -i "s#APP_KEY=.*#APP_KEY=${shell web/artisan app:generate-key}#g" ./prod/infra/.env-prod
+	docker build . --tag ${VMName}:latest --file Dockerfile-prod
+	docker save bangunsite:latest | gzip > prod/bangunsite.tar.gz
+	zip production.zip prod/*
+	

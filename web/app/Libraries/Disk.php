@@ -104,7 +104,7 @@ class Disk
         }
     }
 
-    public static function ls(string $path)
+    public static function ls(string $path, $readable = true)
     {
         $scan = scandir($path);
         $dir = [];
@@ -113,40 +113,54 @@ class Disk
             if ($list === '.') {
                 continue;
             }
-            $fullPath = $path.'/'.$list;
+            $fullPath = $path.DIRECTORY_SEPARATOR.$list;
             if (is_dir($fullPath)) {
                 $dir[] = [
-                    $list, 'directory', self::getIcon($fullPath), self::perm($fullPath), ! is_link($fullPath) ?: readlink($fullPath),
+                    'type' => 'directory',
+                    'name' => $list,
+                    'icon' => self::getIcon($fullPath),
+                    'permission' => self::perm($fullPath),
+                    'link' => ! is_link($fullPath) ?: readlink($fullPath),
+                    'size' => false,
                 ];
 
                 continue;
             }
 
             $file[] = [
-                $list, 'file', self::getIcon($fullPath), self::perm($fullPath), ! is_link($fullPath) ?: readlink($fullPath),
+                'type' => 'file',
+                'name' => $list,
+                'icon' => self::getIcon($fullPath),
+                'permission' => self::perm($fullPath),
+                'link' => ! is_link($fullPath) ?: readlink($fullPath),
+                'size' => self::bytesReadable(filesize($fullPath)),
             ];
         }
 
         return [...$dir, ...$file];
     }
 
-    public static function bytesReadable(int $bytes)
+    public static function bytesReadable(int|float $bytes)
     {
         $symbols = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+        if ($bytes == 0) {
+            return '0'.$symbols[0];
+        }
+
         $exp = floor(log($bytes) / log(1024));
 
-        return sprintf('%.1f'.$symbols[$exp], ($bytes / pow(1024, floor($exp))));
+        return @sprintf('%.1f'.$symbols[$exp], ($bytes / pow(1024, floor($exp))));
     }
 
     public static function validatePath(string $path): bool
     {
-        return strpbrk($path, '\\?%*:|"<>') === false;
+        return strpbrk($path, '\\?%*:|"<>\'') === false;
     }
 
     public static function getIcon($path)
     {
         if (is_dir($path)) {
-            return setIcon('fas fa-folder fa-sm text-warning');
+            return setIcon('fas fa-folder fa-sm text-orange');
         }
         if (is_link($path)) {
             return setIcon('fas fa-link fa-sm text-primary');
@@ -161,5 +175,28 @@ class Disk
     public static function perm($path)
     {
         return substr(sprintf('%o', fileperms($path)), -4);
+    }
+
+    public static function curl($url, $ignoreError = false, &$httpCode = null, &$error = null): string
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_USERAGENT, env('CURL_USER_AGENT',
+            'Mozilla/5.0 (X11; Linux downloader; rv:122.0) Gecko/20100101 Firefox/122.0'
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+        $result = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if (curl_errno($ch) > 0) {
+            return $ignoreError ? $error : false;
+        }
+
+        return $result;
     }
 }
