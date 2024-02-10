@@ -2,4 +2,7 @@
 !.gitignore
 !nginx.conf
 !site.conf
+
 !site.d
+!active.d
+!ssl

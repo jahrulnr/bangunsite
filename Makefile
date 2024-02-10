@@ -20,9 +20,9 @@ up-vm: build-vm
 		&& mkdir ./data/grafana/provisioning; \
 	fi
 	@make precommit
-	docker-compose --compatibility up -d
+	docker-compose --compatibility up -d bangunsite
 restart-vm:
-	docker-compose down && docker-compose up -d
+	docker-compose down && docker-compose up -d bangunsite
 ###	docker-compose logs -f
 down-vm:
 	make clear-cache
