@@ -104,6 +104,32 @@ class Disk
         }
     }
 
+    public static function ls(string $path)
+    {
+        $scan = scandir($path);
+        $dir = [];
+        $file = [];
+        foreach ($scan as $list) {
+            if ($list === '.') {
+                continue;
+            }
+            $fullPath = $path.'/'.$list;
+            if (is_dir($fullPath)) {
+                $dir[] = [
+                    $list, 'directory', self::getIcon($fullPath), self::perm($fullPath), ! is_link($fullPath) ?: readlink($fullPath),
+                ];
+
+                continue;
+            }
+
+            $file[] = [
+                $list, 'file', self::getIcon($fullPath), self::perm($fullPath), ! is_link($fullPath) ?: readlink($fullPath),
+            ];
+        }
+
+        return [...$dir, ...$file];
+    }
+
     public static function bytesReadable(int $bytes)
     {
         $symbols = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
@@ -115,5 +141,25 @@ class Disk
     public static function validatePath(string $path): bool
     {
         return strpbrk($path, '\\?%*:|"<>') === false;
+    }
+
+    public static function getIcon($path)
+    {
+        if (is_dir($path)) {
+            return setIcon('fas fa-folder fa-sm text-warning');
+        }
+        if (is_link($path)) {
+            return setIcon('fas fa-link fa-sm text-primary');
+        }
+        if (is_file($path)) {
+            return setIconByType($path);
+        }
+
+        return setIcon('far fa-question-circle fa-sm text-danger');
+    }
+
+    public static function perm($path)
+    {
+        return substr(sprintf('%o', fileperms($path)), -4);
     }
 }
