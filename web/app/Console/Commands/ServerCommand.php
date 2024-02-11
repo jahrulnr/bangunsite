@@ -77,6 +77,15 @@ class ServerCommand extends Command
      */
     public function handle()
     {
+        // create default web for port 80/443
+        $webPath = env('WEB_PATH');
+        if (! is_dir($webPath)) {
+            exec("mkdir -p '{$webPath}/default'");
+            copy('/app/storage/webconfig/index.html', $webPath.'/default/index.html');
+            copy('/app/storage/webconfig/healty.php', $webPath.'/default/healty.php');
+            exec("chown -R nginx:nginx '{$webPath}'");
+        }
+
         $environmentFile = $this->option('env')
                             ? base_path('.env').'.'.$this->option('env')
                             : base_path('.env');

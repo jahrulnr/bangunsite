@@ -20,6 +20,7 @@ services:
       start_period: 30s
     volumes:
       - ./web:/app:rw
+      - ./data/www:/www:rw
       - ./infra/nginx/default.conf:/etc/nginx/http.d/default.conf:ro
       - ./infra/nginx/nginx.conf:/etc/nginx.conf:ro
       - ./infra/.env:/app/.env:rw
