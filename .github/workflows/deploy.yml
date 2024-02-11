@@ -18,8 +18,9 @@ jobs:
     - name: Test run
       run: docker run -d --name bangunsite ${{ env.IMAGE_NAME }}
     - name: Wait for docker to finish building
-      run: sleep 15
+      run: sleep 5
     - name: Check healty
       run: |
-        docker exec -i bangunsite curl http://localhost/healty.php 
-        docker exec -i bangunsite curl http://localhost:8000 -I
+        docker exec -i bangunsite curl http://localhost/healty.php -s --connect-timeout 10
+        docker exec -i bangunsite artisan key:generate
+        docker exec -i bangunsite curl http://localhost:8000 -Isf --connect-timeout 10

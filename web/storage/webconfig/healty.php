@@ -1,3 +1,3 @@
 <?php
 
-exit('Server healty');
+exit("Server healty\n\n");
