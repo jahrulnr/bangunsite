@@ -4,3 +4,4 @@
 /web/.env
 /template
 /web/storage/webconfig/active.d
+/prod

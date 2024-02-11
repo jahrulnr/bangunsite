@@ -18,7 +18,7 @@ if [ ! -f /www/default/index.html ]; then
     mkdir -p /www/default/
     cp /app/storage/webconfig/index.html /www/default/ 
     cp /app/storage/webconfig/healty.php /www/default/ 
-    chown -R nginx:nginx /www/default/
+    chown -R nginx:nginx /www
 fi
 
 if [ ! -d /app/vendor ]; then
