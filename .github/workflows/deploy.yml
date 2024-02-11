@@ -18,6 +18,6 @@ jobs:
     - name: Test run
       run: docker run -d --name bangunsite ${{ env.IMAGE_NAME }}
     - name: Wait for docker to finish building
-      run: sleep 30
+      run: sleep 15
     - name: Check healty
       run: docker exec -i bangunsoft curl http://localhost/healty.php 
