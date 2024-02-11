@@ -3,7 +3,7 @@ FROM alpine:3.19
 ENV PS1="\[\e]0;\u@\h: \w\a\]${whoami}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
 RUN apk update && apk add --no-cache curl bash bash-completion shadow \
     && apk add --no-cache nginx \
-    && apk add --no-cache git python3 vnstat \
+    && apk add --no-cache git python3 \
     && python3 -m venv /opt/venv \
     && export PATH="/opt/venv/bin:$PATH" \
     && mkdir -p /run/php \
@@ -19,7 +19,7 @@ RUN apk update && apk add --no-cache curl bash bash-completion shadow \
     && groupmod -og 1000 nginx \ 
     && usermod -ou 1000 -g 1000 nginx \
     \
-    && apk add certbot --no-cache \
+    && apk add certbot certbot-nginx --no-cache \
     \
     && apk del shadow git \
     && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \

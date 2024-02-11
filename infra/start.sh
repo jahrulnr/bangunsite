@@ -31,4 +31,9 @@ if [ ! -f /app/database/db.sqlite ]; then
     cd /app && artisan migrate --force
 fi
 
+if [ ! -d /etc/letsencrypt ]; then
+    mkdir -p /etc/letsencrypt
+    ln -s /app/storage/webconfig/ssl /etc/letsencrypt/live
+fi
+
 supervisord -n -c /etc/supervisord.conf
