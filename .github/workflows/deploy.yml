@@ -2,6 +2,7 @@ name: BangunSite Build Action
 
 env:
   IMAGE_NAME: bangunsite:latest
+  BASIC_AUTH: admin:yourstrongpassword
 
 on: push
 
@@ -23,4 +24,4 @@ jobs:
       run: |
         docker exec -i bangunsite curl http://localhost/healty.php -s --connect-timeout 10
         docker exec -i bangunsite artisan key:generate
-        docker exec -i bangunsite curl http://localhost:8000 -Isf --connect-timeout 10
+        docker exec -i bangunsite curl http://localhost:8000 -Isf --connect-timeout 10 --user ${{ env.BASIC_AUTH }}
