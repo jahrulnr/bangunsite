@@ -2,6 +2,9 @@
 !.gitignore
 !nginx.conf
 !site.conf
+!app.ini
+!index.html
+!healty.php
 
 !site.d
 !active.d

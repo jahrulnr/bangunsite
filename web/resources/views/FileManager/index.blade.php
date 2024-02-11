@@ -63,7 +63,8 @@
                             @endif
                             <a href="#copyfile" class="copyfile text-sm text-white" data-file="{{$list['name']}}">Copy</a> |
                             <a href="#chmodfile" class="chmodfile text-sm text-white" data-file="{{$list['name']}}">Chmod</a> |
-                            <a href="#deletefile" class="deletefile text-sm text-white" data-file="{{$list['name']}}">Delete</a>                            
+                            <a href="#deletefile" class="deletefile text-sm text-white" data-file="{{$list['name']}}">Delete</a>
+                            <data style="display:none">{!! htmlspecialchars(json_encode($list), ENT_NOQUOTES) !!}</data>                           
                         @endif
                     </div>
                 </div>
@@ -75,4 +76,9 @@
 
 @push('footer')
     @include('FileManager.new')
+    @include('FileManager.read')
+
+    <form action="{{route('filemanager.action')}}?path={{$fullPath}}" method="POST" class="">
+    @include('FileManager.action')
+    </form>
 @endpush

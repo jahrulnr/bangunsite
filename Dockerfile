@@ -42,8 +42,6 @@ RUN chmod +x /run/start.sh
 ADD --chown=nginx:nginx ./web /app
 ADD ./infra/db.sqlite /app/database/
 COPY --chown=nginx:nginx ./infra/.env /app/.env
-COPY --chown=nginx:nginx ./infra/nginx/index.html /www/default/
-COPY --chown=nginx:nginx ./infra/php/healty.php /www/default/
 RUN chmod +x /app/artisan
 
 WORKDIR /app

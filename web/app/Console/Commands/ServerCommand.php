@@ -80,28 +80,36 @@ class ServerCommand extends Command
         $environmentFile = $this->option('env')
                             ? base_path('.env').'.'.$this->option('env')
                             : base_path('.env');
+        $iniFile = base_path('storage/webconfig/app.ini');
 
         $hasEnvironment = file_exists($environmentFile);
+        $hasIni = file_exists($iniFile);
 
         $environmentLastModified = $hasEnvironment
                             ? filemtime($environmentFile)
+                            : now()->addDays(30)->getTimestamp();
+        $iniLastModified = $hasIni
+                            ? filemtime($iniFile)
                             : now()->addDays(30)->getTimestamp();
 
         $process = $this->startProcess($hasEnvironment);
 
         while ($process->isRunning()) {
-            if ($hasEnvironment) {
+            if ($hasEnvironment || $hasIni) {
                 clearstatcache(false, $environmentFile);
+                clearstatcache(false, $iniFile);
             }
 
             if (! $this->option('no-reload') &&
                 $hasEnvironment &&
-                filemtime($environmentFile) > $environmentLastModified) {
+                (filemtime($environmentFile) > $environmentLastModified ||
+                filemtime($iniFile) > $iniLastModified)) {
                 $environmentLastModified = filemtime($environmentFile);
+                $iniLastModified = filemtime($iniFile);
 
                 $this->newLine();
 
-                $this->components->info('Environment modified. Restarting server...');
+                $this->components->info('app.ini or .env changes detected. Restarting server...');
 
                 $process->stop(5);
 

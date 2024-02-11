@@ -19,7 +19,10 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/website/{id}/updateSSL', [WebsiteManagerController::class, 'updateSSL'])->name('website.updateSSL');
 
     Route::get('/browse', [FileManagerController::class, 'index'])->name('filemanager');
+    Route::post('/browse/show', [FileManagerController::class, 'show'])->name('filemanager.showfile');
     Route::post('/browse/new', [FileManagerController::class, 'new'])->name('filemanager.new');
+    Route::patch('/browse/action', [FileManagerController::class, 'action'])->name('filemanager.action');
+    Route::delete('/browse/action', [FileManagerController::class, 'delete']);
 
     Route::get('/phpinfo', function () {
         phpinfo();

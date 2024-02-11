@@ -65,27 +65,31 @@ class Disk
 
     public static function cp($src, $dst)
     {
+        $success = true;
         $dir = opendir($src);
         @mkdir($dst);
         while (false !== ($file = readdir($dir))) {
             if (($file != '.') && ($file != '..')) {
                 if (is_dir($src.'/'.$file)) {
-                    self::cp($src.'/'.$file, $dst.'/'.$file);
+                    $success = self::cp($src.'/'.$file, $dst.'/'.$file);
                 } else {
-                    copy($src.'/'.$file, $dst.'/'.$file);
+                    $success = copy($src.'/'.$file, $dst.'/'.$file);
                 }
             }
         }
         closedir($dir);
+
+        return $success;
     }
 
-    public static function rm(string $path, bool $recursive = false)
+    public static function rm(string $path, bool $recursive = false): bool
     {
+        $success = true;
         if ($recursive === false || $recursive === null) {
             if (is_dir($path)) {
-                rmdir($path);
+                $success = rmdir($path);
             } elseif (is_file($path) || is_link($path)) {
-                unlink($path);
+                $success = unlink($path);
             }
         } else {
             if (is_dir($path)) {
@@ -93,15 +97,19 @@ class Disk
                 foreach ($files as $file) {
                     if ($file != '.' && $file != '..') {
                         if (is_dir($path.DIRECTORY_SEPARATOR.$file) && ! is_link($path.'/'.$file)) {
-                            static::rm($path.DIRECTORY_SEPARATOR.$file);
+                            $success = static::rm($path.DIRECTORY_SEPARATOR.$file, $recursive);
                         } else {
-                            unlink($path.DIRECTORY_SEPARATOR.$file);
+                            $success = unlink($path.DIRECTORY_SEPARATOR.$file);
                         }
                     }
                 }
-                static::rm($path);
+                $success = rmdir($path);
+            } else {
+                $success = unlink($path);
             }
         }
+
+        return $success;
     }
 
     public static function ls(string $path, $readable = true)
@@ -150,6 +158,25 @@ class Disk
         $exp = floor(log($bytes) / log(1024));
 
         return @sprintf('%.1f'.$symbols[$exp], ($bytes / pow(1024, floor($exp))));
+    }
+
+    public static function toBytes(string $from): ?int
+    {
+        $units = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+        $number = substr($from, 0, -2);
+        $suffix = strtoupper(substr($from, -2));
+
+        //B or no suffix
+        if (is_numeric(substr($suffix, 0, 1))) {
+            return preg_replace('/[^\d]/', '', $from);
+        }
+
+        $exponent = array_flip($units)[$suffix] ?? null;
+        if ($exponent === null) {
+            return null;
+        }
+
+        return $number * (1024 ** $exponent);
     }
 
     public static function validatePath(string $path): bool

@@ -48,7 +48,7 @@ $('#vert-new-file').click(function(){
         <div class="mb-3">
           @csrf
           <input type="hidden" name="type" value="directory">
-          <input type="hidden" name="base" value="{{$fullPath}}">
+          <input type="hidden" name="path" value="{{$fullPath}}">
           <div class="form-group mb-3">
             <label>Directory Name</label>
             <input type="text" name="name" value="" class="form-control" placeholder="Directory name" required>
@@ -64,7 +64,7 @@ $('#vert-new-file').click(function(){
         <div class="mb-3">
           @csrf
           <input type="hidden" name="type" value="file">
-          <input type="hidden" name="base" value="{{$fullPath}}">
+          <input type="hidden" name="path" value="{{$fullPath}}">
           <div class="form-group mb-3">
             <label>File Name</label>
             <input type="text" name="name" value="" class="form-control" placeholder="File name" required>
@@ -84,7 +84,7 @@ $('#vert-new-file').click(function(){
         <div class="mb-3">
           @csrf
           <input type="hidden" name="type" value="remote">
-          <input type="hidden" name="base" value="{{$fullPath}}">
+          <input type="hidden" name="path" value="{{$fullPath}}">
           <div class="form-group mb-3">
             <label>File Name</label>
             <input type="text" name="name" value="" class="form-control" placeholder="File name" required>
@@ -104,7 +104,11 @@ $('#vert-new-file').click(function(){
         <div class="mb-3">
           @csrf
           <input type="hidden" name="type" value="upload">
-          <input type="hidden" name="base" value="{{$fullPath}}">
+          <input type="hidden" name="path" value="{{$fullPath}}">
+          <div class="form-group mb-3">
+            <label>File Name</label>
+            <input type="text" name="name" value="" class="form-control" placeholder="File name" required>
+          </div>
           <div class="form-group mb-3">
             <label>File</label>
             <input type="file" name="file" value="" class="form-control" placeholder="File" required>
@@ -128,6 +132,7 @@ $('#vert-new-file').click(function(){
 @endsection
 
 @push('js')
+<script src="{{asset('assets/plugins/toastr/toastr.min.js')}}"></script>
 <script src="{{asset('assets/plugins/jquery/jquery.form.min.js')}}"></script>
 <script>
 $(document).ready(function () {
@@ -137,17 +142,31 @@ $(document).ready(function () {
       $('#upload-proggress').show().addClass('show')
       $('.progress .progress-bar').css("width", percentage+'%', function() {
         return $(this).attr("aria-valuenow", percentage) + "%";
-      })
+      }).addClass('bg-primary').removeClass('bg-success bg-danger')
     },
     uploadProgress: function (event, position, total, percentComplete) {
       $('.progress .progress-bar').css("width", percentComplete+'%', function() {
         return $(this).attr("aria-valuenow", percentComplete) + "%";
       })
     },
+    success: function(resp){
+      $('#upload-proggress .progress-bar').addClass('bg-success').removeClass('bg-primary')
+      toastr.success(resp.message)
+      window.location.reload()
+    },
+    error: function(xhr, err, errThrow){
+      console.table([
+        xhr, err, errThrow
+      ])
+      $('#upload-proggress .progress-bar').addClass('bg-danger').removeClass('bg-primary')
+      toastr.error(xhr.statusText)
+    },
     complete: function (xhr) {
       $('.progress .progress-bar').css("width", '100%', function() {
         return $(this).attr("aria-valuenow", 100) + "%";
       })
+
+      console.log(xhr)
     }
   });
 });
