@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Libraries\Disk;
+use App\Libraries\Nginx;
+use App\Libraries\Site;
 use App\Models\Website;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -86,8 +88,9 @@ class WebsiteManagerController extends Controller
         }
 
         $site = $site->first();
+        $config = Site::getSiteConfig($site->domain);
 
-        return view('Website.edit', compact('site'));
+        return view('Website.edit', compact('site', 'config'));
     }
 
     public function update($id, Request $r)
@@ -113,6 +116,43 @@ class WebsiteManagerController extends Controller
         }
 
         return redirect(route('website.edit', $r->domain))->with('error', 'Update failed');
+    }
+
+    public function updateConfig($id, Request $r)
+    {
+        $site = Website::find($id);
+        if (! $site->exists()) {
+            return back()->with('error', "Site doesn't exists");
+        }
+
+        $oriConfig = Site::getSiteConfig($site->domain);
+        $newConfig = str_replace("\r", '', $r->config);
+        $pathConfig = Site::getConfigPath($site->domain);
+
+        Disk::createFile($pathConfig, $newConfig);
+        $test = Nginx::test($site->domain);
+
+        if ($test === true) {
+            Nginx::restart();
+
+            return back()->with('success', 'Update successfully');
+        }
+
+        Disk::createFile($pathConfig, $oriConfig);
+
+        return back()
+            ->with('error', "Update failed! {$test}")
+            ->with('config', $newConfig);
+    }
+
+    public function updateSSL($id, Request $r)
+    {
+        $site = Website::find($id);
+        if (! $site->exists()) {
+            return back()->with('error', "Site doesn't exists");
+        }
+
+        return $r->all();
     }
 
     public function destroy($id, Request $r)

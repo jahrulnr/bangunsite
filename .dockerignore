@@ -3,3 +3,4 @@
 /web/vendor
 /web/.env
 /template
+/web/storage/webconfig/active.d

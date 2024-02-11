@@ -31,7 +31,7 @@
             <tbody>
                 @if (count($website) == 0)
                     <tr>
-                        <td colspan="6">
+                        <td colspan="6" class="text-sm">
                             Website is not available, 
                             <a href="#" class="text-success font-weight-bold" data-toggle="modal" data-target="#create-site">
                                 create new site.
@@ -41,29 +41,29 @@
                 @else                    
                 @foreach ($website as $data)
                     <tr>
-                        <td>
-                            <span class="text-light font-weight-bold">
+                        <td style="vertical-align: middle">
+                            <span class="text-light font-weight-bold text-sm">
                                 {{$data->name}}
                             </span>
                         </td>
-                        <td>
-                            <a href="#" target="_blank" rel="noopener noreferrer" class="text-light">
+                        <td style="vertical-align: middle">
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="text-light text-sm">
                                 {{$data->domain}}
                             </a>
                         </td>
-                        <td>
-                            <a href="#path={{$data->path}}" target="_blank" rel="noopener noreferrer" class="text-light">
+                        <td style="vertical-align: middle">
+                            <a href="{{route('filemanager')}}?path={{$data->path}}" target="_blank" rel="noopener noreferrer" class="text-light text-sm">
                                 {{strpos($data->path, 30) ? substr($data->path, 27).'...' : $data->path}}
                             </a>
                         </td>
-                        <td>
-                            <span class="text-{{$data->ssl ? "success":"danger"}}">
-                                {{$data->ssl ? "ACTIVE" : "DISABLED"}}
+                        <td align="middle" style="vertical-align: middle">
+                            <span class="text-{{$data->ssl ? "success":"danger"}} text-sm">
+                                {!! setIcon($data->ssl ? 'fas fa-check-circle' : 'fas fa-times-circle') !!}
                             </span>
                         </td>
-                        <td>
-                            <span class="text-{{$data->active ? "success":"danger"}}">
-                                {{$data->active ? "ACTIVE" : "DISABLED"}}
+                        <td align="middle" style="vertical-align: middle">
+                            <span class="text-{{$data->active ? "success":"danger"}} text-sm">
+                                {!! setIcon($data->active ? 'fas fa-check-circle' : 'fas fa-times-circle') !!}
                             </span>
                         </td>
                         <td align="middle" class="w-auto text-nowrap">

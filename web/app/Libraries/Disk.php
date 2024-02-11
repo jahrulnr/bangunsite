@@ -65,27 +65,31 @@ class Disk
 
     public static function cp($src, $dst)
     {
+        $success = true;
         $dir = opendir($src);
         @mkdir($dst);
         while (false !== ($file = readdir($dir))) {
             if (($file != '.') && ($file != '..')) {
                 if (is_dir($src.'/'.$file)) {
-                    self::cp($src.'/'.$file, $dst.'/'.$file);
+                    $success = self::cp($src.'/'.$file, $dst.'/'.$file);
                 } else {
-                    copy($src.'/'.$file, $dst.'/'.$file);
+                    $success = copy($src.'/'.$file, $dst.'/'.$file);
                 }
             }
         }
         closedir($dir);
+
+        return $success;
     }
 
-    public static function rm(string $path, bool $recursive = false)
+    public static function rm(string $path, bool $recursive = false): bool
     {
+        $success = true;
         if ($recursive === false || $recursive === null) {
             if (is_dir($path)) {
-                rmdir($path);
+                $success = rmdir($path);
             } elseif (is_file($path) || is_link($path)) {
-                unlink($path);
+                $success = unlink($path);
             }
         } else {
             if (is_dir($path)) {
@@ -93,27 +97,133 @@ class Disk
                 foreach ($files as $file) {
                     if ($file != '.' && $file != '..') {
                         if (is_dir($path.DIRECTORY_SEPARATOR.$file) && ! is_link($path.'/'.$file)) {
-                            static::rm($path.DIRECTORY_SEPARATOR.$file);
+                            $success = static::rm($path.DIRECTORY_SEPARATOR.$file, $recursive);
                         } else {
-                            unlink($path.DIRECTORY_SEPARATOR.$file);
+                            $success = unlink($path.DIRECTORY_SEPARATOR.$file);
                         }
                     }
                 }
-                static::rm($path);
+                $success = rmdir($path);
+            } else {
+                $success = unlink($path);
             }
         }
+
+        return $success;
     }
 
-    public static function bytesReadable(int $bytes)
+    public static function ls(string $path, $readable = true)
+    {
+        $scan = scandir($path);
+        $dir = [];
+        $file = [];
+        foreach ($scan as $list) {
+            if ($list === '.') {
+                continue;
+            }
+            $fullPath = $path.DIRECTORY_SEPARATOR.$list;
+            if (is_dir($fullPath)) {
+                $dir[] = [
+                    'type' => 'directory',
+                    'name' => $list,
+                    'icon' => self::getIcon($fullPath),
+                    'permission' => self::perm($fullPath),
+                    'link' => ! is_link($fullPath) ?: readlink($fullPath),
+                    'size' => false,
+                ];
+
+                continue;
+            }
+
+            $file[] = [
+                'type' => 'file',
+                'name' => $list,
+                'icon' => self::getIcon($fullPath),
+                'permission' => self::perm($fullPath),
+                'link' => ! is_link($fullPath) ?: readlink($fullPath),
+                'size' => self::bytesReadable(filesize($fullPath)),
+            ];
+        }
+
+        return [...$dir, ...$file];
+    }
+
+    public static function bytesReadable(int|float $bytes)
     {
         $symbols = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+        if ($bytes == 0) {
+            return '0'.$symbols[0];
+        }
+
         $exp = floor(log($bytes) / log(1024));
 
-        return sprintf('%.1f'.$symbols[$exp], ($bytes / pow(1024, floor($exp))));
+        return @sprintf('%.1f'.$symbols[$exp], ($bytes / pow(1024, floor($exp))));
+    }
+
+    public static function toBytes(string $from): ?int
+    {
+        $units = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+        $number = substr($from, 0, -2);
+        $suffix = strtoupper(substr($from, -2));
+
+        //B or no suffix
+        if (is_numeric(substr($suffix, 0, 1))) {
+            return preg_replace('/[^\d]/', '', $from);
+        }
+
+        $exponent = array_flip($units)[$suffix] ?? null;
+        if ($exponent === null) {
+            return null;
+        }
+
+        return $number * (1024 ** $exponent);
     }
 
     public static function validatePath(string $path): bool
     {
-        return strpbrk($path, '\\?%*:|"<>') === false;
+        return strpbrk($path, '\\?%*:|"<>\'') === false;
+    }
+
+    public static function getIcon($path)
+    {
+        if (is_dir($path)) {
+            return setIcon('fas fa-folder fa-sm text-orange');
+        }
+        if (is_link($path)) {
+            return setIcon('fas fa-link fa-sm text-primary');
+        }
+        if (is_file($path)) {
+            return setIconByType($path);
+        }
+
+        return setIcon('far fa-question-circle fa-sm text-danger');
+    }
+
+    public static function perm($path)
+    {
+        return substr(sprintf('%o', fileperms($path)), -4);
+    }
+
+    public static function curl($url, $ignoreError = false, &$httpCode = null, &$error = null): string
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_USERAGENT, env('CURL_USER_AGENT',
+            'Mozilla/5.0 (X11; Linux downloader; rv:122.0) Gecko/20100101 Firefox/122.0'
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+        $result = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if (curl_errno($ch) > 0) {
+            return $ignoreError ? $error : false;
+        }
+
+        return $result;
     }
 }
