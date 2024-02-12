@@ -22,6 +22,7 @@ jobs:
       run: sleep 5
     - name: Check healty
       run: |
-        docker exec -i bangunsite curl http://localhost/healty.php -s --connect-timeout 10
-        docker exec -i bangunsite artisan key:generate
-        docker exec -i bangunsite curl http://localhost:8000 -Isf --connect-timeout 10 --user ${{ env.BASIC_AUTH }}
+        docker exec -i bangunsite curl localhost/healty.php -s --connect-timeout 10
+        docker exec -i bangunsite artisan key:generate > /dev/null
+        docker exec -i bangunsite curl localhost:8000/healty -sf --connect-timeout 10
+        docker stop bangunsite && docker rm bangunsite && docker rmi ${{ env.IMAGE_NAME }}

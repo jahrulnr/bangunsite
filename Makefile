@@ -61,6 +61,17 @@ precommit:
 force-composer:
 	cp infra/platform_check.php web/vendor/composer/
 
+bangunsite=`docker container inspect -f '{{.State.Running}}' ${VMName}`
+test-image: 
+	if [ "${bangunsite}" = "true" ]; then make down-vm; fi
+	docker build . --tag ${VMTag} --file Dockerfile-prod
+	docker run -d --name bangunsite ${VMTag}
+	sleep 5
+	docker exec -i bangunsite curl localhost/healty.php -s --connect-timeout 10
+	docker exec -i bangunsite artisan key:generate > /dev/null
+	docker exec -i bangunsite curl localhost:8000/healty -sf --connect-timeout 10
+	docker stop bangunsite && docker rm bangunsite
+
 setup-prod:
 	cp -r infra prod/
 	chmod +x web/artisan
