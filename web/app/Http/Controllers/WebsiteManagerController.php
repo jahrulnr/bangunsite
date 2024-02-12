@@ -15,8 +15,10 @@ class WebsiteManagerController extends Controller
     public function index()
     {
         $website = Website::all();
+        $nginxConf = Site::getNginxConfig();
+        $defConf = Site::getDefaultConfig();
 
-        return view('Website.index', compact('website'));
+        return view('Website.index', compact('website', 'nginxConf', 'defConf'));
     }
 
     public function check(Request $r, $id = null): string
@@ -96,7 +98,7 @@ class WebsiteManagerController extends Controller
     public function update($id, Request $r)
     {
         $site = Website::find($id);
-        if (! $site->exists()) {
+        if (! $site) {
             return back()->with('error', "Site doesn't exists");
         }
 
@@ -120,17 +122,31 @@ class WebsiteManagerController extends Controller
 
     public function updateConfig($id, Request $r)
     {
-        $site = Website::find($id);
-        if (! $site->exists()) {
-            return back()->with('error', "Site doesn't exists");
+        if ($id != 'default') {
+            $site = Website::find($id);
+            if (! $site->exists()) {
+                return back()->with('error', "Site doesn't exists");
+            }
+
+            $oriConfig = Site::getSiteConfig($site->domain);
+            $newConfig = str_replace("\r", '', $r->config);
+            $pathConfig = Site::getConfigPath($site->domain);
+
+            Disk::createFile($pathConfig, $newConfig);
+            $test = Nginx::test($site->domain);
+        } else {
+            $pathConfig = Site::$nginxPath.'/http.d/default.conf';
+            if (! is_writable($pathConfig)) {
+                return back()
+                    ->with('error', 'Update failed! Default configuration is not writeable');
+            }
+
+            $oriConfig = file_get_contents($pathConfig);
+            $newConfig = str_replace("\r", '', $r->config);
+
+            Disk::createFile($pathConfig, $newConfig);
+            $test = Nginx::test();
         }
-
-        $oriConfig = Site::getSiteConfig($site->domain);
-        $newConfig = str_replace("\r", '', $r->config);
-        $pathConfig = Site::getConfigPath($site->domain);
-
-        Disk::createFile($pathConfig, $newConfig);
-        $test = Nginx::test($site->domain);
 
         if ($test === true) {
             Nginx::restart();
@@ -153,6 +169,32 @@ class WebsiteManagerController extends Controller
         }
 
         return $r->all();
+    }
+
+    public function updateNginx(Request $r)
+    {
+        if (! $r->content) {
+            return back()->with('error', 'Configuration not valid!');
+        }
+
+        $nginxConf = Site::$nginxPath.'/nginx.conf';
+        if (! is_writable($nginxConf)) {
+            return back()
+                ->with('error', 'Update failed! Nginx configuration is not writeable');
+        }
+
+        $fileTest = Site::$nginxPath.'/nginx-test.conf';
+        Disk::createFile($fileTest, $r->content);
+        $test = Nginx::testNginxConf();
+        unlink($fileTest);
+        if ($test === true) {
+            Disk::createFile($nginxConf, $r->content);
+            Nginx::restart();
+
+            return back()->with('success', 'Nginx configuration updated successfully.');
+        }
+
+        return back()->with('error', 'Update error! '.$test);
     }
 
     public function destroy($id, Request $r)

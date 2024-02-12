@@ -15,7 +15,19 @@ trait SiteTrait
 
     public static $activePath = '/storage/webconfig/active.d';
 
+    public static $nginxPath = '/etc/nginx';
+
     public static $defaultPath = '/www/default';
+
+    public static function getNginxConfig(): string
+    {
+        return file_get_contents(self::$nginxPath.'/nginx.conf');
+    }
+
+    public static function getDefaultConfig(): string
+    {
+        return file_get_contents(self::$nginxPath.'/http.d/default.conf');
+    }
 
     public static function getBaseConfig(): string
     {
@@ -36,6 +48,11 @@ trait SiteTrait
         is_dir($path) or mkdir($path, 0750, true);
 
         return $path.'/'.$domain.'.conf';
+    }
+
+    public static function getDefaultPath()
+    {
+        return env('WEB_PATH', self::$defaultPath);
     }
 
     public static function getSiteConfig(string $domain): string

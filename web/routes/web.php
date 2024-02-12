@@ -14,9 +14,11 @@ Route::middleware('basic.auth')->group(function () {
 
 Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-    Route::resource('/website', WebsiteManagerController::class);
+
     Route::post('/website/{id}/updateConfig', [WebsiteManagerController::class, 'updateConfig'])->name('website.updateConfig');
     Route::post('/website/{id}/updateSSL', [WebsiteManagerController::class, 'updateSSL'])->name('website.updateSSL');
+    Route::patch('/website/updateNginx', [WebsiteManagerController::class, 'updateNginx'])->name('website.updateNginx');
+    Route::resource('/website', WebsiteManagerController::class);
 
     Route::get('/browse', [FileManagerController::class, 'index'])->name('filemanager');
     Route::post('/browse/show', [FileManagerController::class, 'show'])->name('filemanager.showfile');
@@ -27,4 +29,8 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/phpinfo', function () {
         phpinfo();
     });
+});
+
+Route::any('/healty', function () {
+    return env('APP_NAME').' run as expected '.PHP_EOL;
 });

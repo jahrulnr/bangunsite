@@ -7,10 +7,10 @@
         <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#create-site">
             {!! setIcon('fas fa-sm fa-plus mr-2') !!} New
         </button>
-        <button class="btn btn-primary mb-3">
+        <button class="btn btn-primary mb-3" id="show-nginx-modal" data-toggle="modal" data-target="#nginx-editor-modal">
             {!! setIcon('fas fa-sm fa-project-diagram mr-2') !!} Nginx
         </button>
-        <button class="btn btn-primary mb-3">
+        <button class="btn btn-primary mb-3" id="show-defconf-modal" data-toggle="modal" data-target="#defconf-editor-modal">
             {!! setIcon('fas fa-sm fa-location-arrow mr-2') !!} Default Web
         </button>
         <button class="btn btn-info mb-3 ml-3">
@@ -91,5 +91,11 @@
             'body' => view('Website.form'),
             'button' => '<button class="btn btn-primary" type="submit">Create</button>'
         ])
+    </form>
+    <form action="{{route('website.updateNginx')}}" method="POST">
+        @include('Website.nginx')
+    </form>
+    <form action="{{route('website.updateConfig', 'default')}}" method="POST">
+        @include('Website.defaultconf')
     </form>
 @endpush

@@ -8,7 +8,10 @@ class Nginx
 {
     public static function test(string $domain = '')
     {
-        $basepath = base_path().'/storage/webconfig/nginx.conf';
+        $basepath = empty($domain)
+            ? Site::$nginxPath.'/nginx.conf'
+            : base_path().'/storage/webconfig/nginx.conf';
+
         if (! empty($domain)) {
             $path = '/tmp/nginx-'.time().'.conf';
             Disk::createFile($path,
@@ -24,6 +27,21 @@ class Nginx
             unlink($path);
         }
 
+        $result = explode("\n", $exec);
+        if (strpos($result[1], 'success')) {
+            return true;
+        } else {
+            return $result[0];
+        }
+    }
+
+    public static function testNginxConf(?string $path = null)
+    {
+        if ($path == null) {
+            $path = Site::$nginxPath.'/nginx-test.conf';
+        }
+
+        $exec = Commander::shell('nginx -t -c '.$path);
         $result = explode("\n", $exec);
         if (strpos($result[1], 'success')) {
             return true;
