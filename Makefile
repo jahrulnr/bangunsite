@@ -70,7 +70,7 @@ test-image:
 	docker exec -i bangunsite curl localhost/healty.php -s --connect-timeout 10
 	docker exec -i bangunsite artisan key:generate > /dev/null
 	docker exec -i bangunsite curl localhost:8000/healty -sf --connect-timeout 10
-	docker stop bangunsite && docker rm bangunsite
+	docker stop bangunsite > /dev/null && docker rm bangunsite > /dev/null
 
 setup-prod:
 	cp -r infra prod/
