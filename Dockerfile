@@ -1,8 +1,9 @@
 FROM alpine:3.19
 
 ENV PS1="\[\e]0;\u@\h: \w\a\]${whoami}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
-RUN apk update && apk add --no-cache curl bash bash-completion shadow \
-    && apk add --no-cache nginx \
+RUN echo "apps:x:0:0:root:/root:/bin/bash" >> /etc/passwd \
+    && apk update && apk add --no-cache curl bash bash-completion shadow \
+    && apk add --no-cache nginx nginx-mod-stream \
     && apk add --no-cache git python3 \
     && python3 -m venv /opt/venv \
     && export PATH="/opt/venv/bin:$PATH" \
@@ -14,7 +15,7 @@ RUN apk update && apk add --no-cache curl bash bash-completion shadow \
         php82-gd php82-xml php82-zip php82-curl php82-opcache \
         php82-fileinfo php82-session php82-dom php82-tokenizer php82-exif \
         php82-xmlreader php82-simplexml php82-xmlwriter \
-        php82-sqlite3 php82-pdo_sqlite php82-openssl php82-redis \
+        php82-sqlite3 php82-pdo_sqlite php82-openssl php82-redis php82-mysqli php82-pdo_mysql \
     \
     && groupmod -og 1000 nginx \ 
     && usermod -ou 1000 -g 1000 nginx \
@@ -32,6 +33,8 @@ RUN cat /tmp/cron.txt >> /etc/crontabs/root && rm /tmp/cron.txt
 ENV PATH="/opt/venv/bin:/app:/app/vendor/bin:$PATH"
 COPY ./infra/nginx/nginx.conf /etc/nginx/
 COPY ./infra/nginx/default.conf /etc/nginx/http.d/
+COPY ./infra/nginx/stream.d /etc/nginx/stream.d
+COPY ./infra/nginx/custom.d /etc/nginx/custom.d
 COPY ./infra/php/php.ini /etc/php82/
 COPY ./infra/php/php-fpm.conf /etc/php82/
 COPY ./infra/php/www.conf /etc/php82/php-fpm.d/
@@ -48,10 +51,10 @@ WORKDIR /app
 USER nginx
 RUN composer update --no-cache --optimize-autoloader
 RUN if [ ! -f /app/public/storage ] && [ ! -d /app/public/storage ]; then php artisan storage:link; fi
-USER root
+USER apps
 
 EXPOSE 80
 EXPOSE 8000
 
 CMD [ "/run/start.sh" ]
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "--fail", "localhost/healt" ]
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "--fail", "localhost/healty.php" ]

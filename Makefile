@@ -1,7 +1,7 @@
 VMTag=bangunsite:1.0
 VMName=bangunsite
 
-install:
+install: build-vm
 ### makesure to make down-vm before run this command
 ###	sudo rm -r data template web/vendor web/.env web/tmp
 	@make up-vm
@@ -10,8 +10,10 @@ install:
 	@make migrate
 
 build-vm:
-	docker build . --tag ${VMTag}
-up-vm: build-vm
+	docker build . --tag ${VMTag} -f Dockerfile --progress=plain
+rebuild-vm: build-vm
+	@make up-vm
+up-vm: 
 	if [ -z `docker network ls -qf name=cloudflared_bangunsoft` ]; then docker network create -d bridge cloudflared_bangunsoft; fi
 	if [ ! -d ./data ]; then \
 		mkdir -p ./data/logs/nginx \
@@ -68,7 +70,7 @@ test-image:
 	docker run -d --name bangunsite ${VMTag}
 	sleep 5
 	docker exec -i bangunsite curl localhost/healty.php -s --connect-timeout 10
-	docker exec -i bangunsite artisan key:generate > /dev/null
+	docker exec -i bangunsite artisan key:generate > /dev/null && sleep 2
 	docker exec -i bangunsite curl localhost:8000/healty -sf --connect-timeout 10
 	docker stop bangunsite > /dev/null && docker rm bangunsite > /dev/null
 

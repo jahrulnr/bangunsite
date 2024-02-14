@@ -16,6 +16,8 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
     Route::post('/website/{id}/updateConfig', [WebsiteManagerController::class, 'updateConfig'])->name('website.updateConfig');
+    Route::options('/website/{id}/enableSite', [WebsiteManagerController::class, 'enableSite'])->name('website.enableSite');
+    Route::delete('/website/{id}/enableSite', [WebsiteManagerController::class, 'destroy'])->name('website.destroy');
     Route::post('/website/{id}/updateSSL', [WebsiteManagerController::class, 'updateSSL'])->name('website.updateSSL');
     Route::patch('/website/updateNginx', [WebsiteManagerController::class, 'updateNginx'])->name('website.updateNginx');
     Route::resource('/website', WebsiteManagerController::class);

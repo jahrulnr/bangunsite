@@ -30,6 +30,9 @@ services:
       - ./data/active.d:/app/storage/webconfig/active.d:rw
       - ./data/site.d:/app/storage/webconfig/site.d:rw
       - ./data/ssl:/app/storage/webconfig/ssl:rw
+      - ./data/nginx.conf:/app/storage/webconfig/nginx.conf:rw
+      - ./data/site.conf:/app/storage/webconfig/site.conf:rw
+      - ./infra/db.sqlite:/app/database/db.sqlite:rw
     networks:
       - bangunsite
 
