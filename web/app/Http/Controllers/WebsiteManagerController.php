@@ -161,6 +161,25 @@ class WebsiteManagerController extends Controller
             ->with('config', $newConfig);
     }
 
+    public function enableSite(string $domain)
+    {
+        $site = Website::getSite($domain);
+        if (! $site->exists()) {
+            return response()->json([
+                'msg' => "Site doesn't exists",
+            ], 400);
+        }
+
+        $site = $site->first();
+        $site->active = ! $site->active;
+        Site::enableSite($domain, $site->active);
+        $site->save();
+
+        return response()->json([
+            'msg' => 'Site '.($site->active ? 'actived' : 'disabled').' successfully',
+        ]);
+    }
+
     public function updateSSL($id, Request $r)
     {
         $site = Website::find($id);
@@ -197,16 +216,20 @@ class WebsiteManagerController extends Controller
         return back()->with('error', 'Update error! '.$test);
     }
 
-    public function destroy($id, Request $r)
+    public function destroy(string $domain, Request $r)
     {
-        $website = Website::find($id);
-        if ($website->doesntExists()) {
-            return back()->with('error', "Website doesn't exists!");
+        $site = Website::getSite($domain);
+        if (! $site->exists()) {
+            return response()->json([
+                'msg' => "Site doesn't exists",
+            ], 400);
         }
 
-        $website::removeSite($website, $r->clean);
-        $website->delete();
+        Site::removeSite($site->first(), $r->clean);
+        $site->delete();
 
-        return back()->with('success', 'Website deleted successfully');
+        return response()->json([
+            'msg' => 'Site deleted successfully',
+        ]);
     }
 }

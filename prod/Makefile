@@ -1,4 +1,3 @@
-VMTag=bangunsite:latest
 VMName=bangunsite
 
 install:

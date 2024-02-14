@@ -16,7 +16,7 @@ Editor - <code>samplecode</code>
 
 @section('modal-button')
 {{-- <button class="btn btn-primary" type="submit"></button> --}}
-@endsection
+@overwrite
 
 @push('css')
   <style>

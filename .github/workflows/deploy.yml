@@ -2,18 +2,41 @@ name: BangunSite Build Action
 
 env:
   IMAGE_NAME: bangunsite:latest
-  BASIC_AUTH: admin:yourstrongpassword
 
 on: push
 
 jobs:
-  build:
-    name: build image
+  hadolin:
+    name: hadolint
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/master'
+    
+    steps:
+    - uses: actions/checkout@main
+    - uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile-prod
+  
+  # sonarqube:
+  #   needs: hadolin
+  #   name: Healty check
+  #   runs-on: ubuntu-latest
+  #   if: github.ref != 'refs/heads/main' && success()
+
+  #   steps:
+  #   - name: SonarQube Scan
+  #     uses: sonarsource/sonarqube-scan-action@master
+  #     env:
+  #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  healty:
+    needs: hadolin
+    name: Healty check
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main' && success()
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@main
     - name: Build
       run: docker build -f Dockerfile-prod --tag ${{ env.IMAGE_NAME }} .
     - name: Test run
@@ -23,7 +46,7 @@ jobs:
     - name: Check healty
       run: |
         docker exec -i bangunsite curl localhost/healty.php -s --connect-timeout 10
-        docker exec -i bangunsite artisan key:generate > /dev/null
+        docker exec -i bangunsite artisan key:generate > /dev/null && sleep 5
         docker exec -i bangunsite curl localhost:8000/healty -sf --connect-timeout 10
         docker stop bangunsite > /dev/null
         docker rm bangunsite > /dev/null

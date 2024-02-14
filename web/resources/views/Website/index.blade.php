@@ -24,7 +24,7 @@
                     <th>Domain</th>
                     <th>Path</th>
                     <th>SSL</th>
-                    <th>Status</th>
+                    <th>Running</th>
                     <th align="middle" class="text-center">Action</th>
                 </tr>
             </thead>
@@ -69,8 +69,10 @@
                         <td align="middle" class="w-auto text-nowrap">
                             <data style="display: none" id="{{$data->domain}}">{!! json_encode($data) !!}</data>
                             <div class="btn-group" data-site="{{$data->domain}}">
+                                <a href="#" class="btn btn-sm btn-warning" data-act="site-disable">
+                                    {{$data->active ? 'Disable' : 'Enable'}}
+                                </a>
                                 <a href="{{route('website.edit', $data->domain)}}" class="btn btn-sm btn-primary" data-act="site-config">Config</a>
-                                <a href="#" class="btn btn-sm btn-warning" data-act="site-disable">Disable</a>
                                 <a href="#" class="btn btn-sm btn-danger" data-act="site-delete">Delete</a>
                             </div>
                         </td>
@@ -97,5 +99,8 @@
     </form>
     <form action="{{route('website.updateConfig', 'default')}}" method="POST">
         @include('Website.defaultconf')
+    </form>
+    <form action="{{route('website.enableSite', 'example')}}" method="POST">
+        @include('Website.enablesite')
     </form>
 @endpush

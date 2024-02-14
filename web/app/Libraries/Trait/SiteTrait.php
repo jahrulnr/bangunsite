@@ -4,6 +4,7 @@ namespace App\Libraries\Trait;
 
 use App\Libraries\Commander;
 use App\Libraries\Disk;
+use App\Libraries\Nginx;
 use App\Models\Website;
 use Illuminate\Support\Facades\Session;
 
@@ -100,12 +101,13 @@ trait SiteTrait
         return $result ?? false;
     }
 
-    public function removeSite(Website $data, $remove): void
+    public static function removeSite(Website $data, $remove): void
     {
         if ($remove !== null || $remove !== false) {
-            Disk::rm($data->path);
+            Disk::rm($data->path, true);
         }
         static::enableSite($data->domain, false);
         unlink(self::getConfigPath($data->domain));
+        Nginx::restart();
     }
 }
