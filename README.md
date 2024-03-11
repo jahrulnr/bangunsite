@@ -1,4 +1,4 @@
-![dashboard](screenshots/dashboard.png)
+![dashboard](/screenshots/dashboard.png)
 
 # BangunSite
 
@@ -14,6 +14,8 @@ This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PH
 
 - **Certbot Integration**: Includes Certbot for automating the process of obtaining and renewing SSL certificates. This ensures secure communication between clients and the web server.
 
+- **Cronjobs Integration**: With this feature, you can define and manage cronjobs directly from the web interface. This includes scheduling recurring tasks and executing commands.
+
 - **PHP 8.2 Support**: Runs Laravel applications specifically on PHP 8.2, leveraging the latest features and improvements in the PHP language.
 
 ## Getting Started
@@ -28,23 +30,12 @@ This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PH
 1. Clone this repository to your local machine:
 
     ```bash
-    git clone https://github.com/jahrulnr/bangunsite.git
-    ```
+    git clone --branch development https://github.com/jahrulnr/bangunsite.git
 
-2. Navigate to the project directory:
-
-    ```bash
-    cd bangunsite
-    git switch development
-    ```
-
-3. Build and start the Docker containers:
+2. Build and start the Docker containers:
 
     ```bash
-    make up-vm
-    make cp-db
-    docker exec -i bangunsite artisan key:generate
-    make migrate
+    make install
     ```
 
 4. Access the Laravel BangunSite at `http://localhost:8080` in your web browser.
