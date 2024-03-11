@@ -1,28 +1,6 @@
 @extends('layout')
 @section('head', $site->name)
 
-@push('css')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/dracula.min.css" integrity="sha512-gFMl3u9d0xt3WR8ZeW05MWm3yZ+ZfgsBVXLSOiFz2xeVrZ8Neg0+V1kkRIo9LikyA/T9HuS91kDfc2XWse0K0A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-@endpush
-@push('js')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js" integrity="sha512-8RnEqURPUc5aqFEN04aQEiPlSAdE0jlFS/9iGgUyNtwFnSKCXhmB6ZTNl7LnDtDWKabJIASzXrzD0K+LYexU9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/nginx/nginx.min.js" integrity="sha512-kgLrmRot2x/yBR/HMHKt1S1Q0gIFOt6JGwAqrowCFxtal0MLUrqwzOu1YUA59Uds85K/1dnw9xZrXCs/5FAFJQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script>
-var editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
-    lineNumbers: true,
-    mode: 'nginx',
-    theme: 'dracula',
-	value: $('#editor').val()
-});
-$('#config-tab').click(function(){
-	setTimeout(() => {
-		editor.refresh()
-	}, 200);
-})
-</script>
-@endpush
-
 @section('content')
 <div class="card card-primary card-outline card-tabs">
 	<div class="card-header p-0 pt-1 border-bottom-0">
@@ -70,24 +48,32 @@ $('#config-tab').click(function(){
 					</div>
 				</form>
 			</div>
-			<div class="tab-pane fade" id="ssl-config" role="tabpanel" aria-labelledby="ssl-tab">				
+			<div class="tab-pane fade" id="ssl-config" role="tabpanel" aria-labelledby="ssl-tab">
+				@if ($privateCert && $publicCert && !$isEnabled)
+					<div class="callout callout-info">
+						SSL is exists, but not enabled
+					</div>
+				@endif
 				<form action="{{route('website.updateSSL', $site->id)}}" method="POST" class="row">
 					@csrf
 					<div class="col-12 col-md-6">
 						<div class="form-group">
 							<label>Private Key</label>
-							<textarea class="form-control mb-3" name="private" cols="30" rows="10">{{$config}}</textarea>
+							<textarea class="form-control mb-3" name="private" cols="30" rows="10">{{$privateCert}}</textarea>
 						</div>
 					</div>
 					<div class="col-12 col-md-6">
 						<div class="form-group">
 							<label>Public Key</label>
-							<textarea class="form-control mb-3" name="public" cols="30" rows="10">{{$config}}</textarea>
+							<textarea class="form-control mb-3" name="public" cols="30" rows="10">{{$publicCert}}</textarea>
 						</div>
 					</div>
 					<div class="col-12">
 						<div class="d-flex justify-content-end">
-							<button class="btn btn-primary" type="submit">Update</button>
+							<div>
+								<button class="btn btn-primary mr-3" id="install-ssl">Install SSL</button>
+								<button class="btn btn-primary" type="submit">Update</button>
+							</div>
 						</div>
 					</div>
 				</form>
@@ -97,3 +83,84 @@ $('#config-tab').click(function(){
 	<!-- /.card -->
 </div>
 @endsection
+
+@push('footer')
+	@include('Widget.log', [
+		'id' => 'modal-install',
+		'title' => 'Install SSL',
+		'body' => ''
+	])
+@endpush
+
+@push('css')
+@css(asset('assets/plugins/codemirror/codemirror.css'))
+@css(asset('assets/plugins/codemirror/theme/dracula.css'))
+@css(asset('assets/plugins/codemirror/addon/dialog/dialog.css'))
+@css(asset('assets/plugins/codemirror/addon/search/matchesonscrollbar.css'))
+@endpush
+@push('js')
+@js(asset('assets/plugins/codemirror/codemirror.js'))
+@js(asset('assets/plugins/codemirror/mode/nginx/nginx.js'))
+@js(asset('assets/plugins/codemirror/keymap/sublime.js'))
+@js(asset('assets/plugins/codemirror/addon/dialog/dialog.js'))
+@js(asset('assets/plugins/codemirror/addon/search/searchcursor.js'))
+@js(asset('assets/plugins/codemirror/addon/search/search.js'))
+@js(asset('assets/plugins/codemirror/addon/display/autorefresh.js'))
+@js(asset('assets/plugins/codemirror/addon/scroll/annotatescrollbar.js'))
+@js(asset('assets/plugins/codemirror/addon/search/matchesonscrollbar.js'))
+@js(asset('assets/plugins/codemirror/addon/search/jump-to-line.js'))
+<script>
+var editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+    lineNumbers: true,
+    mode: 'nginx',
+	keymap: 'sublime',
+    theme: 'dracula',
+	autoRefresh: true,
+	extraKeys: {"Alt-F": "findPersistent"}
+});
+$('#config-tab').click(function(){
+	setTimeout(() => {
+		editor.refresh()
+	}, 200);
+})
+</script>
+<script>
+$(document).ready(function(){
+	let clicked = false
+	let start = "true"
+	let progress = "false"
+	const modal = $('#modal-install')
+	$("#install-ssl").click(function(e){
+		e.preventDefault()
+		modal.modal('show')
+
+		let textarea = $('#mirror-modal-install')
+		if (clicked == false)
+			clicked = setInterval(() => {
+				$.ajax({
+					url: '{{route("website.installSSL", $site->id)}}?start='+start+'&progress='+progress,
+					success: function(resp){
+						start = "false"
+						progress = "true"
+						textarea.val(resp).trigger('change')
+
+						if(resp.includes("-- Task Done --")){
+							clearInterval(clicked)
+							clicked = false
+							start = "true"
+							progress = "false"
+						}
+					}
+				})
+			}, 1000);
+	})
+
+	modal.on('hidden.bs.modal', function(){
+		if (clicked != false){
+			clearInterval(clicked)
+			clicked = false
+		}
+	})
+})
+</script>
+@endpush

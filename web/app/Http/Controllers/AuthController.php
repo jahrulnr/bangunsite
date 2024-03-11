@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -23,8 +24,20 @@ class AuthController extends Controller
 
     public function auth(Request $request): RedirectResponse
     {
+        $executed = RateLimiter::attempt('login-invalid:'.$request->ip(), 5,
+            function () use ($request) {
+                header('Hit: '.RateLimiter::attempts('login-invalid:'.$request->ip()));
+            }, 60,
+        );
+
+        if (! $executed) {
+            $wait = RateLimiter::availableIn('login-invalid:'.$request->ip());
+
+            return back()->with('error', 'Too many request! You may try again in '.$wait.' seconds.');
+        }
+
         $input = $request->only('email', 'password');
-        $session = Session::get('id');
+        $session = Session::get('id', [0 => '-1']);
         $input['email'] = $request->email ?: User::find($session[0])?->email;
         $validator = Validator::make($input, [
             'email' => 'email|required',

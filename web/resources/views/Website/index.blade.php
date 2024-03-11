@@ -47,7 +47,7 @@
                             </span>
                         </td>
                         <td style="vertical-align: middle">
-                            <a href="#" target="_blank" rel="noopener noreferrer" class="text-light text-sm">
+                            <a href="http://{{$data->domain}}" target="_blank" rel="noopener noreferrer" class="text-light text-sm">
                                 {{$data->domain}}
                             </a>
                         </td>
@@ -57,8 +57,11 @@
                             </a>
                         </td>
                         <td align="middle" style="vertical-align: middle">
-                            <span class="text-{{$data->ssl ? "success":"danger"}} text-sm">
-                                {!! setIcon($data->ssl ? 'fas fa-check-circle' : 'fas fa-times-circle') !!}
+                            @php
+                                $isEnabled = App\Libraries\SSL::checkSSL($data->domain);
+                            @endphp
+                            <span class="text-{{$isEnabled ? "success":"danger"}} text-sm">
+                                {!! setIcon($isEnabled ? 'fas fa-check-circle' : 'fas fa-times-circle') !!}
                             </span>
                         </td>
                         <td align="middle" style="vertical-align: middle">

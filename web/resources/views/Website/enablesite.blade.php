@@ -15,7 +15,6 @@ Are you sure to <span id='enable-site-text'>enable/disable</span>?
 @overwrite
 
 @push('js')
-<script src="{{asset('assets/plugins/toastr/toastr.min.js')}}"></script>
 <script>
 $(document).ready(function(){
   $('a[data-act="site-disable"],a[data-act="site-delete"]').click(function(e){

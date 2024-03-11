@@ -3,39 +3,43 @@ FROM alpine:3.19
 ENV PS1="\[\e]0;\u@\h: \w\a\]${whoami}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
 
 ENV PATH="/opt/venv/bin:/app:$PATH"
-RUN echo "apps:x:0:0:root:/root:/bin/bash" >> /etc/passwd \
+ENV TZ="Asia/Jakarta"
+RUN echo "apps:x:0:0:root:/root:/bin/bash" >> /etc/passwd && \
+    echo "alias ll='ls -l'" >> /root/.bashrc \
     && apk update && apk add --no-cache curl=8.5.0-r0 \
         shadow=4.14.2-r0 \
         bash=5.2.21-r0 \
         bash-completion=2.11-r6 \
+        tzdata=2024a-r0 \
         nginx=1.24.0-r15 \
         nginx-mod-stream=1.24.0-r15 \
-        python3=3.11.6-r1 \
+        docker=25.0.3-r1 \
+        python3=3.11.8-r0 \
         git=2.43.0-r0 \
-        php82=8.2.15-r0 \
-        php82-phar=8.2.15-r0 \
-        php82-fpm=8.2.15-r0 \
-        php82-iconv=8.2.15-r0 \
-        php82-mbstring=8.2.15-r0 \ 
-        php82-gd=8.2.15-r0 \
-        php82-xml=8.2.15-r0 \
-        php82-zip=8.2.15-r0 \
-        php82-curl=8.2.15-r0 \
-        php82-opcache=8.2.15-r0 \
-        php82-fileinfo=8.2.15-r0 \
-        php82-session=8.2.15-r0 \
-        php82-dom=8.2.15-r0 \
-        php82-tokenizer=8.2.15-r0 \
-        php82-exif=8.2.15-r0 \
-        php82-xmlreader=8.2.15-r0 \
-        php82-simplexml=8.2.15-r0 \
-        php82-xmlwriter=8.2.15-r0 \
-        php82-sqlite3=8.2.15-r0 \
-        php82-pdo_sqlite=8.2.15-r0 \
-        php82-openssl=8.2.15-r0 \
+        php82=8.2.16-r0 \
+        php82-phar=8.2.16-r0 \
+        php82-fpm=8.2.16-r0 \
+        php82-iconv=8.2.16-r0 \
+        php82-mbstring=8.2.16-r0 \ 
+        php82-gd=8.2.16-r0 \
+        php82-xml=8.2.16-r0 \
+        php82-zip=8.2.16-r0 \
+        php82-curl=8.2.16-r0 \
+        php82-opcache=8.2.16-r0 \
+        php82-fileinfo=8.2.16-r0 \
+        php82-session=8.2.16-r0 \
+        php82-dom=8.2.16-r0 \
+        php82-tokenizer=8.2.16-r0 \
+        php82-exif=8.2.16-r0 \
+        php82-xmlreader=8.2.16-r0 \
+        php82-simplexml=8.2.16-r0 \
+        php82-xmlwriter=8.2.16-r0 \
+        php82-sqlite3=8.2.16-r0 \
+        php82-pdo_sqlite=8.2.16-r0 \
+        php82-openssl=8.2.16-r0 \
         php82-pecl-redis=6.0.2-r0 \
-        php82-mysqli=8.2.15-r0 \
-        php82-pdo_mysql=8.2.15-r0 \
+        php82-mysqli=8.2.16-r0 \
+        php82-pdo_mysql=8.2.16-r0 \
         certbot=2.7.4-r0 \
         certbot-nginx=2.7.4-r0 \
     && python3 -m venv /opt/venv \
@@ -45,6 +49,7 @@ RUN echo "apps:x:0:0:root:/root:/bin/bash" >> /etc/passwd \
     && echo "supervisor==4.2.5" >> /tmp/pip.txt \
     && echo "git+https://github.com/coderanger/supervisor-stdout" >> /tmp/pip.txt \
     && pip install --no-cache-dir -r /tmp/pip.txt  \
+    && ln -s /usr/sbin/php-fpm82 /usr/sbin/php-fpm \
     \
     && groupmod -og 1000 nginx \ 
     && usermod -ou 1000 -g 1000 nginx \
@@ -66,7 +71,9 @@ COPY ./infra/start.sh /run/
 COPY --chown=nginx:nginx ./web /app
 COPY --chown=nginx:nginx ./infra/.env-prod /app/.env
 COPY ./infra/db.sqlite /app/database/
-RUN chmod +x /app/artisan && chmod +x /run/start.sh
+COPY ./infra/cron.txt /tmp/
+RUN cat /tmp/cron.txt >> /etc/crontabs/root && rm /tmp/cron.txt \
+    && chmod +x /app/artisan && chmod +x /run/start.sh
 
 WORKDIR /app
 USER nginx
@@ -79,4 +86,4 @@ EXPOSE 443
 EXPOSE 8000
 
 CMD [ "/run/start.sh" ]
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "--fail", "localhost/healty.php" ]
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "--fail", "localhost:10001/ping" ]
