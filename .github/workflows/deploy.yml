@@ -15,19 +15,6 @@ jobs:
     - uses: hadolint/hadolint-action@v3.1.0
       with:
         dockerfile: Dockerfile-prod
-  
-  # sonarqube:
-  #   needs: hadolin
-  #   name: Healty check
-  #   runs-on: ubuntu-latest
-  #   if: github.ref != 'refs/heads/main' && success()
-
-  #   steps:
-  #   - name: SonarQube Scan
-  #     uses: sonarsource/sonarqube-scan-action@master
-  #     env:
-  #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   healty:
     needs: hadolin

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Libraries\Disk;
+use App\Libraries\Facades\Disk;
 use Illuminate\Http\Request;
 
 class FileManagerController extends Controller
@@ -114,6 +114,8 @@ class FileManagerController extends Controller
                     $path = $path = ($r->path ?? '/tmp').DIRECTORY_SEPARATOR.'import-'.$name;
                 }
 
+                $httpCode = 0;
+                $error = null;
                 $curl = Disk::curl($r->url, $r->ignore ?? false, $httpCode, $error);
                 if ($r->ignore == null && $httpCode != 200) {
                     return back()->with('error', "Import file failed! {$error}");

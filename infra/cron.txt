@@ -1,2 +1,2 @@
 # min   hour    day     month   weekday command
-#*       *       *       *       *       echo "test" > /dev/stdout
+# 0       0       *       *       *       echo -e "`date` `certbot renew --post-hook 'nginx -s reload'`\n" >> /app/storage/logs/certbot-cron.log

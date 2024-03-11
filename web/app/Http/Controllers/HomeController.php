@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Libraries\Cpu;
-use App\Libraries\Disk;
+use App\Libraries\Facades\Disk;
 use App\Libraries\Memory;
 use App\Libraries\Network;
 use App\Models\Website;

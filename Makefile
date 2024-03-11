@@ -8,25 +8,27 @@ install: build-vm
 	@make cp-db
 	@docker exec -i bangunsite artisan key:generate
 	@make migrate
+	@docker exec -i bangunsite artisan db:seed
 
 build-vm:
 	docker build . --tag ${VMTag} -f Dockerfile --progress=plain
 rebuild-vm: build-vm
 	@make up-vm
 up-vm: 
+	if [ -z `docker images -q bangunsite` ]; then make build-vm; fi
 	if [ -z `docker network ls -qf name=cloudflared_bangunsoft` ]; then docker network create -d bridge cloudflared_bangunsoft; fi
 	if [ ! -d ./data ]; then \
 		mkdir -p ./data/logs/nginx \
-		&& mkdir ./data/logs/php82 \
-		&& mkdir ./data/grafana/lib \
-		&& mkdir ./data/grafana/provisioning; \
+		&& mkdir -p ./data/logs/php82 \
+		&& mkdir -p ./data/grafana/lib \
+		&& mkdir -p ./data/grafana/provisioning; \
 	fi
 	@make precommit
-	docker-compose --compatibility up -d bangunsite
+	docker-compose --compatibility up -d bangunsite mail-server
 restart-vm:
-	docker-compose down && docker-compose up -d bangunsite
+	docker-compose down && docker-compose up -d bangunsite mail-server
 logs-vm:
-	docker-compose logs -f -n 100
+	docker logs -f -n 100 bangunsite
 down-vm:
 	make clear-cache
 	docker-compose down --remove-orphans
@@ -65,14 +67,14 @@ force-composer:
 
 bangunsite=`docker container inspect -f '{{.State.Running}}' ${VMName}`
 test-image: 
-	if [ "${bangunsite}" = "true" ]; then make down-vm; fi
-	docker build . --tag ${VMTag} --file Dockerfile-prod
-	docker run -d --name bangunsite ${VMTag}
+	docker build . --tag ${VMName} --file Dockerfile-prod
+	docker run -d --name bangunsite-prod ${VMName}
 	sleep 5
-	docker exec -i bangunsite curl localhost/healty.php -s --connect-timeout 10
-	docker exec -i bangunsite artisan key:generate > /dev/null && sleep 2
-	docker exec -i bangunsite curl localhost:8000/healty -sf --connect-timeout 10
-	docker stop bangunsite > /dev/null && docker rm bangunsite > /dev/null
+	docker exec -i bangunsite-prod curl localhost/healty.php -s --connect-timeout 10
+	docker exec -i bangunsite-prod artisan key:generate > /dev/null && sleep 2
+	docker exec -i bangunsite-prod curl localhost:8000/healty -sf --connect-timeout 10
+	docker stop bangunsite-prod > /dev/null && docker rm bangunsite-prod > /dev/null
+	docker rmi ${VMName} > /dev/null
 
 setup-prod:
 	cp -r infra prod/

@@ -11,10 +11,12 @@
     <label>Path</label>
     <input type="text" name="path" value="{{$path??''}}" placeholder="{{env('WEB_PATH')}}/" value="" class="form-control" required>
 </div>
+@if (request()->route()->action['as'] == 'website.index')
 <div class="custom-control custom-switch mb-3">
     <input type="checkbox" name="ssl" class="custom-control-input" id="ssl" {{ isset($ssl) && $ssl ? 'checked': '' }}>
     <label for="ssl" class="custom-control-label">SSL</label>
 </div>
+@endif
 <div class="custom-control custom-switch mb-3">
     <input type="checkbox" name="active" class="custom-control-input" id="active" {{ isset($active) && $active ? 'checked' : '' }}>
     <label for="active" class="custom-control-label">Enable</label>

@@ -3,7 +3,7 @@
 namespace App\Libraries\Trait;
 
 use App\Libraries\Commander;
-use App\Libraries\Disk;
+use App\Libraries\Facades\Disk;
 use App\Libraries\Nginx;
 use App\Models\Website;
 use Illuminate\Support\Facades\Session;
@@ -93,7 +93,9 @@ trait SiteTrait
         } elseif ($enable == false && (is_link($enablePath) || is_file($enablePath))) {
             $result = unlink($enablePath);
         } else {
-            Session::flash('warning', 'Website already enabled');
+            if (file_exists($enablePath)) {
+                Session::flash('warning', 'Website already enabled');
+            }
 
             return true;
         }
@@ -103,11 +105,16 @@ trait SiteTrait
 
     public static function removeSite(Website $data, $remove): void
     {
-        if ($remove !== null || $remove !== false) {
+        if (($remove !== null || $remove !== false) && file_exists($data->path)) {
             Disk::rm($data->path, true);
         }
+
         static::enableSite($data->domain, false);
-        unlink(self::getConfigPath($data->domain));
         Nginx::restart();
+
+        $sitePath = self::getConfigPath($data->domain);
+        if (file_exists($sitePath)) {
+            unlink($sitePath);
+        }
     }
 }

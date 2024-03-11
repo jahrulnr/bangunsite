@@ -6,16 +6,20 @@
   <title>@yield('head') | {{env('APP_NAME')}}</title>
   
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="{{asset("assets/plugins/fontawesome-free/css/all.min.css")}}">
+  @css(asset("assets/plugins/fontawesome-free/css/all.min.css"))
   <!-- Theme style -->
-  <link rel="stylesheet" href="{{asset("assets/css/adminlte.min.css")}}">
-  <link rel="stylesheet" href="{{asset('assets/plugins/toastr/toastr.min.css')}}">
+  @css(asset("assets/css/adminlte.min.css"))
+  @css(asset("assets/plugins/toastr/toastr.min.css"))
   <link rel="icon" href="{{asset('assets/favicon.png')}}">
   @stack('css')
 </head>
 <body class="hold-transition layout-fixed dark-mode">
+<!-- Preloader -->
+<div class="preloader flex-column justify-content-center align-items-center">
+  <img class="animation__shake" src="{{asset('assets/favicon.png')}}" alt="BangunSiteLogo" height="60" width="60">
+</div>
 <!-- Site wrapper -->
-<div class="wrapper">
+<div class="wrapper" style="visibility: hidden;">
   <!-- Navbar -->
   <nav class="main-header navbar navbar-expand navbar-dark navbar-dark">
     <!-- Left navbar links -->
@@ -106,24 +110,14 @@
 <!-- ./wrapper -->
 
 <!-- jQuery -->
-<script src="{{asset('assets/plugins/jquery/jquery.min.js')}}"></script>
+@js(asset('assets/plugins/jquery/jquery.min.js'))
 <!-- Bootstrap 4 -->
-<script src="{{asset('assets/plugins/bootstrap/js/bootstrap.bundle.js')}}"></script>
+@js(asset('assets/plugins/bootstrap/js/bootstrap.bundle.js'))
 <!-- AdminLTE App -->
-<script src="{{asset('assets/js/adminlte.min.js')}}"></script>
-
-@if ($msg = session('success'))
-<script src="{{asset('assets/plugins/toastr/toastr.min.js')}}"></script>
-<script>toastr.success("{{$msg}}")</script>
-@elseif ($msg = session('warning'))
-<script src="{{asset('assets/plugins/toastr/toastr.min.js')}}"></script>
-<script>toastr.warning("{{$msg}}")</script>
-@elseif ($msg = session('error'))
-<script src="{{asset('assets/plugins/toastr/toastr.min.js')}}"></script>
-<script>toastr.error("{{$msg}}")</script>
-@endif
+@js(asset('assets/js/adminlte.min.js'))
+@js(asset('assets/plugins/toastr/toastr.min.js'))
 @if (env("ENABLE_LOCKSCREEN"))
-<script src="{{asset('assets/plugins/jquery/jquery-idletimer.js')}}"></script>
+@js(asset('assets/plugins/jquery/jquery-idletimer.js'))
 <script>
 	$(document).ready(function(){
     console.info('Lock screen enabled')
@@ -137,5 +131,21 @@
 @endif
 
 @stack('js')
+
+@if ($msg = session('success'))
+<script>toastr.success("{{$msg}}")</script>
+@endif
+@if ($msg = session('warning'))
+<script>toastr.warning("{{$msg}}")</script>
+@endif
+@if ($msg = session('error'))
+<script>toastr.error("{{$msg}}")</script>
+@endif
+
+<script>
+  $(document).ready(function(){
+    $('.wrapper').css('visibility', 'visible')
+  })
+</script>
 </body>
 </html>
