@@ -2,6 +2,7 @@
 
 namespace App\Libraries;
 
+use App\Libraries\Facades\Disk;
 use App\Models\Website;
 
 class Nginx
