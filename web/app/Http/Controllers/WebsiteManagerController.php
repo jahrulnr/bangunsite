@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Libraries\Disk;
+use App\Jobs\RunCommand;
+use App\Libraries\Commander;
+use App\Libraries\Facades\Disk;
 use App\Libraries\Nginx;
 use App\Libraries\Site;
+use App\Libraries\SSL;
 use App\Models\Website;
+use Error;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -91,8 +96,11 @@ class WebsiteManagerController extends Controller
 
         $site = $site->first();
         $config = Site::getSiteConfig($site->domain);
+        $publicCert = SSL::readPublic($site->domain);
+        $privateCert = SSL::readPrivate($site->domain);
+        $isEnabled = SSL::checkSSL($site->domain);
 
-        return view('Website.edit', compact('site', 'config'));
+        return view('Website.edit', compact('site', 'config', 'publicCert', 'privateCert', 'isEnabled'));
     }
 
     public function update($id, Request $r)
@@ -111,9 +119,12 @@ class WebsiteManagerController extends Controller
         if ($r->name == null) {
             $input['name'] = $r->domain;
         }
+        if ($r->active == null) {
+            $input['active'] = false;
+        }
 
         $site = $site->first();
-        if ($site->update($r->only($site->getFillable()))) {
+        if ($site->update($input)) {
             return redirect(route('website.edit', $r->domain))->with('success', 'Update successfully');
         }
 
@@ -161,14 +172,102 @@ class WebsiteManagerController extends Controller
             ->with('config', $newConfig);
     }
 
-    public function updateSSL($id, Request $r)
+    public function enableSite(string $domain)
+    {
+        $site = Website::getSite($domain);
+        if (! $site->exists()) {
+            return response()->json([
+                'msg' => "Site doesn't exists",
+            ], 400);
+        }
+
+        $site = $site->first();
+        $site->active = ! $site->active;
+        Site::enableSite($domain, $site->active);
+        $site->save();
+
+        return response()->json([
+            'msg' => 'Site '.($site->active ? 'actived' : 'disabled').' successfully',
+        ]);
+    }
+
+    public function installSSL($id, Request $r)
     {
         $site = Website::find($id);
-        if (! $site->exists()) {
+        if (! $site) {
             return back()->with('error', "Site doesn't exists");
         }
 
-        return $r->all();
+        $scriptName = "/tmp/{$site->domain}.sh";
+        $outputName = "/tmp/{$site->domain}.txt";
+        $cmd = "certbot --non-interactive --agree-tos --register-unsafely-without-email --nginx -d {$site->domain}";
+        // $cmd = 'ping 1.1.1.1 -c 100';
+
+        if ($r->start == 'true') {
+            ! file_exists($outputName) ?: unlink($outputName);
+            Disk::createFile($scriptName, <<<BASH
+                #!/bin/bash
+                echo "-- Task Start --"
+                echo "$cmd"
+                $cmd
+                echo "-- Task Done --"
+                rm $scriptName
+            BASH);
+            Commander::exec("chmod +x $scriptName");
+            dispatch((new RunCommand("{$scriptName} > {$outputName}", true)));
+        }
+
+        if (file_exists($outputName)) {
+            $read = '';
+            try {
+                $read = file_get_contents($outputName);
+            } catch (Error $e) {
+                Log::emergency($e->getMessage());
+                $read = $e->getMessage().PHP_EOL.'-- Task Done --';
+            }
+        } else {
+            return 'Waiting task on queue';
+        }
+
+        return $read;
+    }
+
+    public function updateSSL($id, Request $r)
+    {
+        $site = Website::find($id);
+        if (! $site) {
+            return back()->with('error', "Site doesn't exists");
+        }
+
+        $privateCert = str_replace("\r", '', $r->private);
+        $publicCert = str_replace("\r", '', $r->public);
+        $certPath = SSL::getCertPath($site->domain);
+        $realPath = dirname(SSL::$sslPath)."/archive/{$site->domain}";
+        $livePath = SSL::$sslPath;
+        if ($certPath->public == false || $certPath->private == false) {
+            $publicPath = $realPath.'/fullchain.pem';
+            $privatePath = $realPath.'/privkey.pem';
+            $publicLink = $livePath.'/fullchain.pem';
+            $privateLink = $livePath.'/privkey.pem';
+            $put = @Disk::createFile($publicPath, $publicCert)
+                && @Disk::createFile($privatePath, $privateCert);
+            @mkdir($livePath, 0755, true);
+            @symlink('../../live/'.$site->domain.'/fullchain.pem', $publicLink);
+            @symlink('../../live/'.$site->domain.'/privkey.pem', $privateLink);
+            Nginx::setCustomSSL($site->domain, $publicPath, $privatePath);
+        } else {
+            try {
+                $put = file_put_contents($certPath->private, $privateCert)
+                    && file_put_contents($certPath->public, $publicCert);
+            } catch (Exception $e) {
+                $put = false;
+            }
+        }
+
+        return back()->with(
+            $put ? 'success' : 'error',
+            $put ? 'Update SSL successfully' : 'Error when writting SSL'
+        );
     }
 
     public function updateNginx(Request $r)
@@ -197,16 +296,20 @@ class WebsiteManagerController extends Controller
         return back()->with('error', 'Update error! '.$test);
     }
 
-    public function destroy($id, Request $r)
+    public function destroy(string $domain, Request $r)
     {
-        $website = Website::find($id);
-        if ($website->doesntExists()) {
-            return back()->with('error', "Website doesn't exists!");
+        $site = Website::getSite($domain);
+        if (! $site->exists()) {
+            return response()->json([
+                'msg' => "Site doesn't exists",
+            ], 400);
         }
 
-        $website::removeSite($website, $r->clean);
-        $website->delete();
+        Site::removeSite($site->first(), $r->clean);
+        $site->delete();
 
-        return back()->with('success', 'Website deleted successfully');
+        return response()->json([
+            'msg' => 'Site deleted successfully',
+        ]);
     }
 }

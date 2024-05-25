@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Models\Cronjob;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +19,12 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@demo.com',
             'password' => '123456',
+        ]);
+
+        Cronjob::create([
+            'name' => 'Lets Encrypt Renewal',
+            'payload' => 'certbot renew --post-hook \'nginx -s reload\'',
+            'run_every' => 'day',
         ]);
     }
 }

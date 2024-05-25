@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Libraries\Cpu;
-use App\Libraries\Disk;
+use App\Libraries\Facades\Disk;
 use App\Libraries\Memory;
 use App\Libraries\Network;
 use App\Models\Website;
@@ -44,6 +44,13 @@ class HomeController extends Controller
 
         $storage = null;
         exec('df | grep overlay', $storage);
+        if (empty($storage)) {
+            return response()->json([
+                'cpu' => $load,
+                'memory' => $memory,
+                'storage' => null,
+            ]);
+        }
         $rootStorage = null;
         preg_match("#([a-zA-Z]+)\s+([0-9]+)\s+([0-9]+)\s+([0-9]+)#s", $storage[0], $rootStorage);
         $rootStorage = (object) [

@@ -5,8 +5,10 @@ Editor - <code>samplecode</code>
 @overwrite
 
 @push('css')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/dracula.min.css" integrity="sha512-gFMl3u9d0xt3WR8ZeW05MWm3yZ+ZfgsBVXLSOiFz2xeVrZ8Neg0+V1kkRIo9LikyA/T9HuS91kDfc2XWse0K0A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="{{asset('assets/plugins/codemirror/codemirror.css')}}">
+<link rel="stylesheet" href="{{asset('assets/plugins/codemirror/theme/dracula.css')}}">
+@css(asset('assets/plugins/codemirror/addon/dialog/dialog.css'))
+<link rel="stylesheet" href="{{asset('assets/plugins/codemirror/addon/search/matchesonscrollbar.css')}}">
 @endpush
 
 @section('modal-body')
@@ -16,7 +18,7 @@ Editor - <code>samplecode</code>
 
 @section('modal-button')
 {{-- <button class="btn btn-primary" type="submit"></button> --}}
-@endsection
+@overwrite
 
 @push('css')
   <style>
@@ -25,20 +27,31 @@ Editor - <code>samplecode</code>
 @endpush
 
 @push('js')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js" integrity="sha512-8RnEqURPUc5aqFEN04aQEiPlSAdE0jlFS/9iGgUyNtwFnSKCXhmB6ZTNl7LnDtDWKabJIASzXrzD0K+LYexU9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/nginx/nginx.min.js" integrity="sha512-kgLrmRot2x/yBR/HMHKt1S1Q0gIFOt6JGwAqrowCFxtal0MLUrqwzOu1YUA59Uds85K/1dnw9xZrXCs/5FAFJQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/htmlmixed/htmlmixed.min.js" integrity="sha512-HN6cn6mIWeFJFwRN9yetDAMSh+AK9myHF1X9GlSlKmThaat65342Yw8wL7ITuaJnPioG0SYG09gy0qd5+s777w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/htmlembedded/htmlembedded.min.js" integrity="sha512-nZlYJlXg6ZqhEdMELUCY9QpeUZHLZh9JUUe2wnHmEvFSWer2gxmDO4xeQ4QlRM1zMzeZsTdm5oFw2IGhsmmLlA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/xml/xml.min.js" integrity="sha512-LarNmzVokUmcA7aUDtqZ6oTS+YXmUKzpGdm8DxC46A6AHu+PQiYCUlwEGWidjVYMo/QXZMFMIadZtrkfApYp/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/clike/clike.min.js" integrity="sha512-l8ZIWnQ3XHPRG3MQ8+hT1OffRSTrFwrph1j1oc1Fzc9UKVGef5XN9fdO0vm3nW0PRgQ9LJgck6ciG59m69rvfg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/php/php.min.js" integrity="sha512-jZGz5n9AVTuQGhKTL0QzOm6bxxIQjaSbins+vD3OIdI7mtnmYE6h/L+UBGIp/SssLggbkxRzp9XkQNA4AyjFBw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/javascript/javascript.min.js" integrity="sha512-I6CdJdruzGtvDyvdO4YsiAq+pkWf2efgd1ZUSK2FnM/u2VuRASPC7GowWQrWyjxCZn6CT89s3ddGI+be0Ak9Fg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.min.js" integrity="sha512-rQImvJlBa8MV1Tl1SXR5zD2bWfmgCEIzTieFegGg89AAt7j/NBEe50M5CqYQJnRwtkjKMmuYgHBqtD1Ubbk5ww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{{asset('assets/plugins/codemirror/codemirror.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/mode/shell/shell.js')}}"></script>
+{{-- <script src="{{asset('assets/plugins/codemirror/mode/properties/properties.js')}}"></script> --}}
+<script src="{{asset('assets/plugins/codemirror/mode/nginx/nginx.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/mode/htmlmixed/htmlmixed.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/mode/htmlembedded/htmlembedded.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/mode/xml/xml.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/mode/clike/clike.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/mode/php/php.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/mode/javascript/javascript.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/mode/css/css.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/addon/dialog/dialog.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/addon/search/searchcursor.js')}}"></script>
+@js(asset('assets/plugins/codemirror/addon/search/search.js'))
+@js(asset('assets/plugins/codemirror/addon/display/autorefresh.js'))
+<script src="{{asset('assets/plugins/codemirror/addon/scroll/annotatescrollbar.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/addon/search/matchesonscrollbar.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/addon/search/jump-to-line.js')}}"></script>
 <script>
 $(document).ready(function(){
   let editorConfig = {
       lineNumbers: true,
       theme: 'dracula',
+  		autoRefresh: true,
+  		extraKeys: {"Alt-F": "findPersistent"}
   }
 
   const editor = CodeMirror.fromTextArea(document.getElementById('editor'), editorConfig);
@@ -54,6 +67,7 @@ $(document).ready(function(){
     if (mode.includes('conf')) mode = 'nginx'
     if (mode.includes('json')||mode.includes('lock')) mode = 'javascript'
     if (mode.includes('js')) mode = 'javascript'
+    if (mode.includes('sh')) mode = 'shell'
     console.info('mode: '+ mode)
     editor.setOption('mode', mode)
     rModal.modal('show')

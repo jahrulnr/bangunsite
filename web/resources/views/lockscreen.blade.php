@@ -24,7 +24,7 @@
 		<div class="lockscreen-item">
 			<!-- lockscreen image -->
 			<div class="lockscreen-image">
-				<img src="{{App\Models\User::getPicture()}}" alt="User Image">
+				<img src="{{asset('assets/icon.svg')}}" class="bg-white" alt="User Image">
 			</div>
 			<!-- /.lockscreen-image -->
 

@@ -63,7 +63,9 @@ class Website extends Model
                 $result = Nginx::moveDomain($this, $attributes);
             }
 
-            self::enableSite($this->domain, ! $attributes['active']);
+            if (isset($attributes['active'])) {
+                self::enableSite($attributes['domain'], $attributes['active']);
+            }
             Nginx::restart();
         } elseif ($this instanceof Collection) {
             // sorry, multiple update website configuration is not good idea

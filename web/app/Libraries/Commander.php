@@ -4,7 +4,7 @@ namespace App\Libraries;
 
 class Commander
 {
-    public static function exec(string $command)
+    public static function exec(string $command, &$output = null)
     {
         exec($command, $output);
 

@@ -2,7 +2,10 @@
 
 namespace App\Libraries;
 
+use App\Libraries\Facades\Disk;
+use App\Libraries\Facades\Log;
 use App\Models\Website;
+use Exception;
 
 class Nginx
 {
@@ -88,12 +91,30 @@ class Nginx
             'server_name '.$from,
             'server_name '.$to,
             $config);
+        $logPathFrom = Log::getLogPath($from);
+        $logPathTo = Log::getLogPath($to);
+        $config = str_replace(
+            'access_log '.$logPathFrom['access'],
+            'access_log '.$logPathTo['access'],
+            $config
+        );
+        $config = str_replace(
+            'error_log '.$logPathFrom['error'],
+            'error_log '.$logPathTo['error'],
+            $config
+        );
         $result = Disk::createFile($newConfigPath, $config);
 
         if (! $result) {
             return false;
         }
 
+        try {
+            rename($logPathFrom['access'], $logPathTo['access']);
+            rename($logPathFrom['error'], $logPathTo['error']);
+        } catch (Exception $e) {
+            // ignore
+        }
         Disk::rm($oldConfigPath);
         if (isset($attributes['active']) && $attributes['active'] == true) {
             $model::enableSite($to);
@@ -101,5 +122,14 @@ class Nginx
         }
 
         return true;
+    }
+
+    public static function setCustomSSL(string $domain, string $certPath, string $keyPath)
+    {
+        /**
+         * TODO: custom SSL if not set & redirect from 80 to 443
+         * - ssl_certificate
+         * - ssl_certificate_key
+         */
     }
 }

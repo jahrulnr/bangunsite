@@ -3,17 +3,28 @@
 @section('modal-title', 'New File/Directory')
 
 @push('css')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/dracula.min.css" integrity="sha512-gFMl3u9d0xt3WR8ZeW05MWm3yZ+ZfgsBVXLSOiFz2xeVrZ8Neg0+V1kkRIo9LikyA/T9HuS91kDfc2XWse0K0A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="{{asset('assets/plugins/codemirror/codemirror.css')}}">
+<link rel="stylesheet" href="{{asset('assets/plugins/codemirror/theme/dracula.css')}}">
+<link rel="stylesheet" href="{{asset('assets/plugins/codemirror/addon/dialog/dialog.css')}}">
+<link rel="stylesheet" href="{{asset('assets/plugins/codemirror/addon/search/matchesonscrollbar.css')}}">
 @endpush
 @push('js')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js" integrity="sha512-8RnEqURPUc5aqFEN04aQEiPlSAdE0jlFS/9iGgUyNtwFnSKCXhmB6ZTNl7LnDtDWKabJIASzXrzD0K+LYexU9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/nginx/nginx.min.js" integrity="sha512-kgLrmRot2x/yBR/HMHKt1S1Q0gIFOt6JGwAqrowCFxtal0MLUrqwzOu1YUA59Uds85K/1dnw9xZrXCs/5FAFJQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{{asset('assets/plugins/codemirror/codemirror.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/mode/shell/shell.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/addon/dialog/dialog.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/addon/search/searchcursor.js')}}"></script>
+@js(asset('assets/plugins/codemirror/addon/search/search.js'))
+@js(asset('assets/plugins/codemirror/addon/display/autorefresh.js'))
+<script src="{{asset('assets/plugins/codemirror/addon/scroll/annotatescrollbar.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/addon/search/matchesonscrollbar.js')}}"></script>
+<script src="{{asset('assets/plugins/codemirror/addon/search/jump-to-line.js')}}"></script>
 <script>
 var editor = CodeMirror.fromTextArea(document.getElementById('content'), {
   lineNumbers: true,
   mode: 'text',
-  theme: 'dracula'
+  theme: 'dracula',
+  autoRefresh: true,
+  extraKeys: {"Alt-F": "findPersistent"}
 });
 $('#vert-new-file').click(function(){
 	setTimeout(() => {
@@ -132,7 +143,6 @@ $('#vert-new-file').click(function(){
 @endsection
 
 @push('js')
-<script src="{{asset('assets/plugins/toastr/toastr.min.js')}}"></script>
 <script src="{{asset('assets/plugins/jquery/jquery.form.min.js')}}"></script>
 <script>
 $(document).ready(function () {

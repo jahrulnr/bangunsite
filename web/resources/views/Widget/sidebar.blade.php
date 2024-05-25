@@ -11,8 +11,8 @@
         <!-- Sidebar user (optional) -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
-                <img src="{{App\Models\User::getPicture()}}" 
-                class="img-circle elevation-2" alt="User Image" referrerpolicy="no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|unsafe-url">
+                <img src="{{asset('assets/icon.svg')}}" 
+                class="img-circle elevation-2 bg-white" alt="User Image" referrerpolicy="no-referrer|no-referrer-when-downgrade|origin|origin-when-cross-origin|unsafe-url">
             </div>
             <div class="info">
                 <a href="#" class="d-block">{{auth()->user()?->name}}</a>
@@ -36,7 +36,7 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-item">
                     <a href="/" class="nav-link">
-                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <i class="nav-icon fas fa-home"></i>
                         <p>
                             Dashboard
                         </p>
@@ -47,6 +47,54 @@
                         <i class="nav-icon fas fa-globe"></i>
                         <p>
                             Website
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{route('filemanager')}}" class="nav-link">
+                        <i class="nav-icon fas fa-folder"></i>
+                        <p>
+                            FileManager
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{route('cronjob.index')}}" class="nav-link">
+                        <i class="nav-icon fas fa-tasks"></i>
+                        <p>
+                            CronJob
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{route('docker.index')}}" class="nav-link">
+                        <i class="nav-icon fab fa-docker"></i>
+                        <p>
+                            Docker
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{route('database.index')}}" class="nav-link">
+                        <i class="nav-icon fas fa-database"></i>
+                        <p>
+                            Database
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{route('logs')}}" class="nav-link">
+                        <i class="nav-icon fas fa-list-alt"></i>
+                        <p>
+                            Logs
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{route('setting')}}" class="nav-link">
+                        <i class="nav-icon fas fa-user"></i>
+                        <p>
+                            Settings
                         </p>
                     </a>
                 </li>

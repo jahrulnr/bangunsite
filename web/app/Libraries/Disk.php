@@ -2,11 +2,26 @@
 
 namespace App\Libraries;
 
+use Error;
+use ErrorException;
 use Illuminate\Support\Facades\Log;
 
 class Disk
 {
-    public static function devices()
+    private $umask;
+
+    public function __construct()
+    {
+        $this->umask = umask(0);
+    }
+
+    public function __destruct()
+    {
+        // im trying the best for bad permission :)
+        umask($this->umask);
+    }
+
+    public function devices(): array
     {
         $stats = Commander::exec('iostat -k -d');
         unset($stats[count($stats) - 1], $stats[0], $stats[1]);
@@ -15,9 +30,9 @@ class Disk
         return $stats;
     }
 
-    public static function simpleStat()
+    public function simpleStat(): array
     {
-        $devices = static::devices();
+        $devices = $this->devices();
         $label = trim(preg_replace("/\s+/", ' ', $devices[0]));
         $label = explode(' ', $label);
         $rps = str_replace('_read/s', '', $label[2]);
@@ -26,11 +41,11 @@ class Disk
 
         $rps_value = 0;
         $wps_value = 0;
-        foreach ($devices as $name => $value) {
+        foreach ($devices as $value) {
             $value = preg_replace('/\s+/', ' ', $value);
             $value = explode(' ', $value);
-            $rps_value += $value[2];
-            $wps_value += $value[3];
+            $rps_value += isset($value[2]) ? $value[2] : 0;
+            $wps_value += isset($value[3]) ? $value[3] : 0;
         }
 
         return [
@@ -39,50 +54,71 @@ class Disk
         ];
     }
 
-    public static function createFile(string $filename, string $content): bool
+    public function createFile(string $filename, string $content): bool
     {
         $path = dirname($filename);
-        is_dir($path) ?: mkdir($path, 750, true);
+        try {
+            is_dir($path) ?: mkdir($path, 750, true);
 
-        if (file_exists($filename)) {
-            Log::info("[Disk] Rewrite $filename content");
-            $result = file_put_contents($filename, $content);
-        } else {
-            Log::info("[Disk] Creating $filename");
-            $file = fopen($filename, 'w');
-            if ($file) {
-                $result = fwrite($file, $content);
-                fclose($file);
+            if (file_exists($filename)) {
+                Log::info("[Disk] Rewrite $filename content");
+                $result = file_put_contents($filename, $content);
             } else {
-                Log::error("[Disk] Cant create $filename file");
+                Log::info("[Disk] Creating $filename");
+                $file = fopen($filename, 'w');
+                if ($file) {
+                    $result = fwrite($file, $content);
+                    fclose($file);
+                } else {
+                    Log::error("[Disk] Cant create $filename file");
 
-                return false;
+                    return false;
+                }
             }
+        } catch (Error $e) {
+            Log::error('[Disk] '.$e->getMessage());
+
+            return false;
         }
 
         return $result ?? false;
     }
 
-    public static function cp($src, $dst)
+    public function cp($src, $dst): bool
     {
         $success = true;
-        $dir = opendir($src);
-        @mkdir($dst);
-        while (false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
-                if (is_dir($src.'/'.$file)) {
-                    $success = self::cp($src.'/'.$file, $dst.'/'.$file);
+        try {
+            if (is_dir($src)) {
+                $dir = opendir($src);
+                @mkdir($dst);
+                while (false !== ($file = readdir($dir))) {
+                    if (($file != '.') && ($file != '..')) {
+                        if (is_dir($src.'/'.$file)) {
+                            $success = $this->cp($src.'/'.$file, $dst.'/'.$file);
+                        } else {
+                            $success = copy($src.'/'.$file, $dst.'/'.$file);
+                        }
+                    }
+                }
+                closedir($dir);
+            } else {
+                $endWithSlash = str_ends_with($dst, '/');
+                if (is_dir($dst) || $endWithSlash) {
+                    @mkdir($dst, '0755', true);
+                    $success = copy($src, ($endWithSlash ? $dst : $dst.'/').basename($src));
                 } else {
-                    $success = copy($src.'/'.$file, $dst.'/'.$file);
+                    $success = copy($src, $dst);
                 }
             }
+        } catch (Error|ErrorException $e) {
+            Log::alert('[Disk] '.$e->getMessage());
+            $success = false;
         }
-        closedir($dir);
 
         return $success;
     }
 
-    public static function rm(string $path, bool $recursive = false): bool
+    public function rm(string $path, bool $recursive = false): bool
     {
         $success = true;
         if ($recursive === false || $recursive === null) {
@@ -97,7 +133,7 @@ class Disk
                 foreach ($files as $file) {
                     if ($file != '.' && $file != '..') {
                         if (is_dir($path.DIRECTORY_SEPARATOR.$file) && ! is_link($path.'/'.$file)) {
-                            $success = static::rm($path.DIRECTORY_SEPARATOR.$file, $recursive);
+                            $success = $this->rm($path.DIRECTORY_SEPARATOR.$file, $recursive);
                         } else {
                             $success = unlink($path.DIRECTORY_SEPARATOR.$file);
                         }
@@ -112,7 +148,7 @@ class Disk
         return $success;
     }
 
-    public static function ls(string $path, $readable = true)
+    public function ls(string $path, $readable = true): array
     {
         $scan = scandir($path);
         $dir = [];
@@ -126,8 +162,8 @@ class Disk
                 $dir[] = [
                     'type' => 'directory',
                     'name' => $list,
-                    'icon' => self::getIcon($fullPath),
-                    'permission' => self::perm($fullPath),
+                    'icon' => $this->getIcon($fullPath),
+                    'permission' => $this->perm($fullPath),
                     'link' => ! is_link($fullPath) ?: readlink($fullPath),
                     'size' => false,
                 ];
@@ -135,36 +171,37 @@ class Disk
                 continue;
             }
 
+            $size = filesize($fullPath);
             $file[] = [
                 'type' => 'file',
                 'name' => $list,
-                'icon' => self::getIcon($fullPath),
-                'permission' => self::perm($fullPath),
+                'icon' => $this->getIcon($fullPath),
+                'permission' => $this->perm($fullPath),
                 'link' => ! is_link($fullPath) ?: readlink($fullPath),
-                'size' => self::bytesReadable(filesize($fullPath)),
+                'size' => $readable ? $this->bytesReadable($size) : $size,
             ];
         }
 
         return [...$dir, ...$file];
     }
 
-    public static function bytesReadable(int|float $bytes)
+    public function bytesReadable(int|float $bytes): string
     {
         $symbols = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
-        if ($bytes == 0) {
+        try {
+            $exp = floor(log($bytes) / log(1024));
+
+            return @sprintf('%.1f'.$symbols[$exp], ($bytes / pow(1024, floor($exp))));
+        } catch (Error $e) {
             return '0'.$symbols[0];
         }
-
-        $exp = floor(log($bytes) / log(1024));
-
-        return @sprintf('%.1f'.$symbols[$exp], ($bytes / pow(1024, floor($exp))));
     }
 
-    public static function toBytes(string $from): ?int
+    public function toBytes(string $from): ?int
     {
         $units = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
-        $number = substr($from, 0, -2);
-        $suffix = strtoupper(substr($from, -2));
+        $number = substr($from, 0, -1);
+        $suffix = strtoupper(substr($from, -1));
 
         //B or no suffix
         if (is_numeric(substr($suffix, 0, 1))) {
@@ -179,12 +216,12 @@ class Disk
         return $number * (1024 ** $exponent);
     }
 
-    public static function validatePath(string $path): bool
+    public function validatePath(string $path): bool
     {
         return strpbrk($path, '\\?%*:|"<>\'') === false;
     }
 
-    public static function getIcon($path)
+    public function getIcon(string $path): string
     {
         if (is_dir($path)) {
             return setIcon('fas fa-folder fa-sm text-orange');
@@ -199,12 +236,12 @@ class Disk
         return setIcon('far fa-question-circle fa-sm text-danger');
     }
 
-    public static function perm($path)
+    public function perm(string $path): string
     {
         return substr(sprintf('%o', fileperms($path)), -4);
     }
 
-    public static function curl($url, $ignoreError = false, &$httpCode = null, &$error = null): string
+    public function curl(string $url, $ignoreError = false): object
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -224,6 +261,11 @@ class Disk
             return $ignoreError ? $error : false;
         }
 
-        return $result;
+        return (object)
+            [
+                'result' => $result,
+                'code' => $httpCode,
+                'error' => $error,
+            ];
     }
 }
