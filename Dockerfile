@@ -4,33 +4,11 @@ ENV PS1="\[\e]0;\u@\h: \w\a\]${whoami}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01
 
 ENV PATH="/opt/venv/bin:/app:/app/vendor/bin:$PATH"
 ENV TZ="Asia/Jakarta"
-RUN echo "apps:x:0:0:root:/root:/bin/bash" >> /etc/passwd && \
-    echo "alias ll='ls -l'" >> /root/.bashrc \
-    && apk update && apk add --no-cache curl bash bash-completion shadow tzdata \
-    && apk add --no-cache docker \
-    && apk add --no-cache nginx nginx-mod-stream \
-    && apk add --no-cache git python3 \
-    && python3 -m venv /opt/venv \
-    && mkdir -p /run/php \
-    && pip install wheel \
-    && pip install supervisor \
-    && pip install git+https://github.com/coderanger/supervisor-stdout \
-    && apk add --no-cache php82 php82-fpm php82-cli php82-phar php82-iconv php82-mbstring \ 
-        php82-gd php82-xml php82-zip php82-curl php82-opcache \
-        php82-fileinfo php82-session php82-dom php82-tokenizer php82-exif \
-        php82-xmlreader php82-simplexml php82-xmlwriter \
-        php82-sqlite3 php82-pdo_sqlite php82-openssl php82-redis php82-mysqli php82-pdo_mysql \
-    && ln -s /usr/sbin/php-fpm82 /usr/sbin/php-fpm \
-    \
-    && groupmod -og 1000 nginx \ 
-    && usermod -ou 1000 -g 1000 nginx \
-    \
-    && apk add certbot certbot-nginx --no-cache \
-    \
-    && apk del shadow git \
-    && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
-    && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer \
-    && rm -rf /tmp/* /var/cache/apk/* ~/.cache
+COPY infra/apk.sh /tmp/apk.sh
+RUN \
+    chmod +x /tmp/apk.sh && sh /tmp/apk.sh && rm -rf /tmp/apk.sh && \
+    curl -o /tmp/composer-setup.php https://getcomposer.org/installer && \
+    php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer
 
 COPY ./infra/cron.txt /tmp/
 RUN cat /tmp/cron.txt >> /etc/crontabs/root && rm /tmp/cron.txt

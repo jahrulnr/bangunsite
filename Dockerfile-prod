@@ -2,62 +2,13 @@ FROM alpine:3.19
 
 ENV PS1="\[\e]0;\u@\h: \w\a\]${whoami}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
 
-ENV PATH="/opt/venv/bin:/app:$PATH"
+ENV PATH="/opt/venv/bin:/app:/app/vendor/bin:$PATH"
 ENV TZ="Asia/Jakarta"
-RUN echo "apps:x:0:0:root:/root:/bin/bash" >> /etc/passwd && \
-    echo "alias ll='ls -l'" >> /root/.bashrc \
-    && apk update && apk add --no-cache curl=8.5.0-r0 \
-        shadow=4.14.2-r0 \
-        bash=5.2.21-r0 \
-        bash-completion=2.11-r6 \
-        tzdata=2024a-r0 \
-        nginx=1.24.0-r15 \
-        nginx-mod-stream=1.24.0-r15 \
-        docker=25.0.3-r1 \
-        python3=3.11.8-r0 \
-        git=2.43.0-r0 \
-        php82=8.2.16-r0 \
-        php82-phar=8.2.16-r0 \
-        php82-fpm=8.2.16-r0 \
-        php82-iconv=8.2.16-r0 \
-        php82-mbstring=8.2.16-r0 \ 
-        php82-gd=8.2.16-r0 \
-        php82-xml=8.2.16-r0 \
-        php82-zip=8.2.16-r0 \
-        php82-curl=8.2.16-r0 \
-        php82-opcache=8.2.16-r0 \
-        php82-fileinfo=8.2.16-r0 \
-        php82-session=8.2.16-r0 \
-        php82-dom=8.2.16-r0 \
-        php82-tokenizer=8.2.16-r0 \
-        php82-exif=8.2.16-r0 \
-        php82-xmlreader=8.2.16-r0 \
-        php82-simplexml=8.2.16-r0 \
-        php82-xmlwriter=8.2.16-r0 \
-        php82-sqlite3=8.2.16-r0 \
-        php82-pdo_sqlite=8.2.16-r0 \
-        php82-openssl=8.2.16-r0 \
-        php82-pecl-redis=6.0.2-r0 \
-        php82-mysqli=8.2.16-r0 \
-        php82-pdo_mysql=8.2.16-r0 \
-        certbot=2.7.4-r0 \
-        certbot-nginx=2.7.4-r0 \
-    && python3 -m venv /opt/venv \
-    && mkdir -p /run/php \
-    # bypass hadolint
-    && echo "wheel==0.42.0" >> /tmp/pip.txt \
-    && echo "supervisor==4.2.5" >> /tmp/pip.txt \
-    && echo "git+https://github.com/coderanger/supervisor-stdout" >> /tmp/pip.txt \
-    && pip install --no-cache-dir -r /tmp/pip.txt  \
-    && ln -s /usr/sbin/php-fpm82 /usr/sbin/php-fpm \
-    \
-    && groupmod -og 1000 nginx \ 
-    && usermod -ou 1000 -g 1000 nginx \
-    \
-    && apk del shadow git \
-    && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
-    && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer \
-    && rm -rf /tmp/* /var/cache/apk/* /lib/apk/* ~/.cache
+COPY infra/apk.sh /tmp/apk.sh
+RUN \
+    chmod +x /tmp/apk.sh && sh /tmp/apk.sh && rm -rf /tmp/apk.sh && \
+    curl -o /tmp/composer-setup.php https://getcomposer.org/installer && \
+    php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer
 
 COPY ./infra/nginx/nginx.conf /etc/nginx/
 COPY ./infra/nginx/default.conf /etc/nginx/http.d/
