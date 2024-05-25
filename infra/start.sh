@@ -32,8 +32,7 @@ if [ ! -f /app/database/db.sqlite ]; then
 fi
 
 if [ ! -d /etc/letsencrypt ]; then
-    mkdir -p /etc/letsencrypt
-    ln -s /app/storage/webconfig/ssl /etc/letsencrypt/live
+    ln -s /app/storage/webconfig/ssl /etc/letsencrypt
 fi
 
 supervisord -n -c /etc/supervisord.conf

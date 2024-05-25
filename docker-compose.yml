@@ -4,27 +4,33 @@ services:
     image: bangunsite:1.0
     container_name: bangunsite
     privileged: true
-    cpus: 1
+    cpus: 0.5
     mem_limit: 256m
-    memswap_limit: 256m
-    mem_swappiness: 90
+    environment:
+      - TZ=Asia/Jakarta
     ports:
       - "127.0.0.1:7080:80"
+      - "127.0.0.1:7443:443"
       - "127.0.0.1:8080:8000"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f localhost:80/healty"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+    cap_add:
+      - SYS_PTRACE
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./web:/app:rw
       - ./data/www:/www:rw
       - ./infra/nginx/default.conf:/etc/nginx/http.d/default.conf:rw
       - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./infra/.env:/app/.env:rw
       - ./data/logs:/var/log:rw
+    networks:
+      - bangunsite
+
+  mail-server:
+    image: dockage/mailcatcher:0.9.0
+    container_name: mail-server
+    ports:
+      - "127.0.0.1:8081:1080"
     networks:
       - bangunsite
 
