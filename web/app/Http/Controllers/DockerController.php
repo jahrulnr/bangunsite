@@ -31,10 +31,7 @@ class DockerController extends Controller
     public function restart($id)
     {
         $id = preg_replace($this->pattern, '', $id);
-        if ($id == gethostname()) {
-            return response('', 403);
-        }
-        $container = Commander::shell("docker restart $id");
+        $container = Commander::shell("docker restart $id &");
 
         return $container;
     }
@@ -43,6 +40,14 @@ class DockerController extends Controller
     {
         $id = preg_replace($this->pattern, '', $id);
         $container = Commander::shell("docker logs $id -n 200");
+
+        return $container;
+    }
+
+    public function stop($id)
+    {
+        $id = preg_replace($this->pattern, '', $id);
+        $container = Commander::shell("docker stop $id");
 
         return $container;
     }

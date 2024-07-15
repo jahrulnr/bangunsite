@@ -41,21 +41,27 @@
 @include('Widget.log', [
     'id' => 'modal-log',
     'title' => 'Log',
-    'body' => ''
+    'body' => '',
+    'button' => '<button type="button" class="btn btn-primary refresh">Refresh</button>'
 ])
 
 @push('js')
 <script>
+let logDomain
+let logDomainType
 const getLog = function(logType, domain){
-    $.ajax({
+    return $.ajax({
         url: '{{route("logs.get")}}?domain='+domain+'&type='+logType,
+        cache: false,
         success: function(resp){
+            logDomain=domain
+            logDomainType=logType
             const textarea = $('#mirror-modal-log')
             textarea.val(resp)
             textarea.trigger('change')
         },
         error: function(xhr, status, errThrow){
-            console.error(status)
+            console.error(errThrow)
             toastr.error("Error: "+xhr.statusText)
         }
     })
@@ -67,6 +73,19 @@ $('.btn.access-log, .btn.error-log').click(function(){
     const domain = that.attr('data-name')
 
     getLog(logType, domain)
+})
+
+$('.refresh').click(function(){
+    if (logDomain == null || logDomainType == null)
+        return
+
+    getLog(logDomainType, logDomain)
+    .done(function(data){
+        toastr.success("Log refresh successfully")
+    })
+    .fail(function(jqXHR, status){
+        toastr.error("Log refresh failed! see console for details")
+    })
 })
 </script>
 @endpush

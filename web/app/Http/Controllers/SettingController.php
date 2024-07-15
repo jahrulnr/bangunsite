@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Libraries\Commander;
 use App\Libraries\Facades\Disk;
 use App\Libraries\Facades\FPM;
+use App\Mail\Notification;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SettingController
 {
@@ -39,6 +43,18 @@ class SettingController
         }
 
         $user->update($input);
+
+        if (env('MAIL_NOTIFICATION', 'true') == 'true') {
+            try {
+                Mail::to($user->email)->send(new Notification([
+                    'title' => 'Profile Updated Notification',
+                    'subject' => 'Your profile has been updated',
+                    'body' => 'This is a notification that your profile has been updated at '.now()->format('F j, Y H:i').'. If this was not you, please contact us immediately.',
+                ]));
+            } catch (Exception $e) {
+                Log::emergency($e->getMessage());
+            }
+        }
 
         return back()->with('success', 'Account updated successfully');
     }

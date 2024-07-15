@@ -8,7 +8,6 @@ install: build-vm
 	@make cp-db
 	@docker exec -i bangunsite artisan key:generate
 	@make migrate
-	@docker exec -i bangunsite artisan db:seed
 
 build-vm:
 	docker build . --tag ${VMTag} -f Dockerfile --progress=plain

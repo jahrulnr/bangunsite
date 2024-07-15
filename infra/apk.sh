@@ -1,7 +1,7 @@
 echo "apps:x:0:0:root:/root:/bin/bash" >> /etc/passwd
 echo "alias ll='ls -l'" >> /root/.bashrc
 apk update 
-apk add --no-cache curl bash bash-completion shadow tzdata
+apk add --no-cache curl bash bash-completion shadow tzdata openssl make
 apk add --no-cache docker
 apk add --no-cache nginx nginx-mod-stream
 apk add --no-cache git python3
@@ -15,6 +15,7 @@ apk add --no-cache php82 php82-fpm php82-cli php82-phar php82-iconv php82-mbstri
     php82-fileinfo php82-session php82-dom php82-tokenizer php82-exif \
     php82-xmlreader php82-simplexml php82-xmlwriter \
     php82-sqlite3 php82-pdo_sqlite php82-openssl php82-redis php82-mysqli php82-pdo_mysql
+ln -s /usr/bin/php82 /usr/bin/php
 ln -s /usr/sbin/php-fpm82 /usr/sbin/php-fpm
 
 apk add certbot certbot-nginx --no-cache

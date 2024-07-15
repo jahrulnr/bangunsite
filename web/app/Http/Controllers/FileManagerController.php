@@ -102,7 +102,7 @@ class FileManagerController extends Controller
                     return back()->with('error', "Create file failed! {$path} is directory");
                 }
 
-                Disk::createFile($path, $r->content);
+                Disk::createFile($path, $r->content ?? '');
                 shell_exec("chmod {$permission} '{$path}' {$needChown}");
 
                 return back()->with('success', 'File created successfully');
@@ -202,8 +202,8 @@ class FileManagerController extends Controller
                 }
                 if (! file_exists($toPath)) {
                     $needChown = str_starts_with($path, env('WEB_PATH'))
-                    ? "&& chown nginx:nginx '{$path}'"
-                    : '';
+                        ? "&& chown nginx:nginx '{$path}'"
+                        : '';
                     shell_exec("mkdir -p '{$toPath}' && chmod 755 '{$toPath}' {$needChown}");
                 }
 
@@ -211,6 +211,20 @@ class FileManagerController extends Controller
 
                 // dd(Disk::cp($path, $toPath));
                 return back()->with('success', "{$path} copied to {$toPath}");
+                break;
+            case 'execute':
+                if (is_dir($path)) {
+                    return response('Cannot execute this is folder!', 400);
+                }
+                clearstatcache();
+                $perms = (int) substr(sprintf('%o', fileperms($path)), -4);
+                if ($perms < 775) {
+                    return response('Cannot execute this file!', 400);
+                }
+
+                shell_exec("nohup {$path} > /dev/stdout 2>&1 &");
+
+                return response("{$path} executed as job");
                 break;
             default:
                 return $r->all();

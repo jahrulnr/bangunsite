@@ -3,6 +3,9 @@
 procs=$(cat /proc/cpuinfo | grep processor | wc -l)
 sed -i -e "s/worker_processes auto/worker_processes $procs/" /etc/nginx/nginx.conf
 
+# working dir
+WDIR=`pwd`
+
 # docker volume fix
 if [ ! -d /var/log/nginx/ ]; then
     mkdir -p /var/log/nginx
@@ -33,6 +36,16 @@ fi
 
 if [ ! -d /etc/letsencrypt ]; then
     ln -s /app/storage/webconfig/ssl /etc/letsencrypt
+fi
+
+if [ ! -f /app/storage/webconfig/ssl/live/default/cert.pem ]; then
+    if [ ! -d /app/storage/webconfig/ssl/live/default/ ]; then
+        mkdir -p /app/storage/webconfig/ssl/live/default
+    fi
+    cd /app/storage/webconfig/ssl/live/default/
+    make build
+    chown nginx:nginx cert.pem key.pem
+    cd $WDIR
 fi
 
 supervisord -n -c /etc/supervisord.conf

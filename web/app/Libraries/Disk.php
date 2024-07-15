@@ -54,7 +54,7 @@ class Disk
         ];
     }
 
-    public function createFile(string $filename, string $content): bool
+    public function createFile(string $filename, string $content = ''): bool
     {
         $path = dirname($filename);
         try {
@@ -245,7 +245,8 @@ class Disk
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_USERAGENT, env('CURL_USER_AGENT',
+        curl_setopt($ch, CURLOPT_USERAGENT, env(
+            'CURL_USER_AGENT',
             'Mozilla/5.0 (X11; Linux downloader; rv:122.0) Gecko/20100101 Firefox/122.0'
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -262,10 +263,10 @@ class Disk
         }
 
         return (object)
-            [
-                'result' => $result,
-                'code' => $httpCode,
-                'error' => $error,
-            ];
+        [
+            'result' => $result,
+            'code' => $httpCode,
+            'error' => $error,
+        ];
     }
 }

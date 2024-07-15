@@ -1,7 +1,11 @@
 /data
-/web/composer.lock
-/web/vendor
 /web/.env
 /template
 /.github
 /prod
+/web/storage/webconfig/active.d/*
+/web/storage/webconfig/side.d/*
+/web/storage/webconfig/archive
+/web/storage/webconfig/live
+/web/storage/webconfig/active.d
+/web/storage/webconfig/ssl/accounts

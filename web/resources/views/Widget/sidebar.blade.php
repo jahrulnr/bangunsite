@@ -74,14 +74,14 @@
                         </p>
                     </a>
                 </li>
-                <li class="nav-item">
+                {{-- <li class="nav-item">
                     <a href="{{route('database.index')}}" class="nav-link">
                         <i class="nav-icon fas fa-database"></i>
                         <p>
                             Database
                         </p>
                     </a>
-                </li>
+                </li> --}}
                 <li class="nav-item">
                     <a href="{{route('logs')}}" class="nav-link">
                         <i class="nav-icon fas fa-list-alt"></i>

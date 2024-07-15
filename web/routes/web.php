@@ -39,6 +39,8 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
     Route::get('/docker', [DockerController::class, 'index'])->name('docker.index');
     Route::get('/docker/restart/{id}', [DockerController::class, 'restart'])->name('docker.restart');
+    Route::get('/docker/log/{id}', [DockerController::class, 'logs'])->name('docker.log');
+    Route::get('/docker/stop/{id}', [DockerController::class, 'stop'])->name('docker.stop');
 
     Route::get('/browse', [FileManagerController::class, 'index'])->name('filemanager');
     Route::post('/browse/show', [FileManagerController::class, 'show'])->name('filemanager.showfile');

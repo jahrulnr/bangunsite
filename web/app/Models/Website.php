@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
+use App\Libraries\Facades\Site;
 use App\Libraries\Nginx;
-use App\Libraries\Trait\SiteTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Session;
 
 class Website extends Model
 {
-    use SiteTrait;
-
     protected $fillable = [
         'name',
         'domain',
@@ -25,7 +23,7 @@ class Website extends Model
     {
         $website = static::query()->create($attributes);
 
-        $createConfig = ! $website ?: self::createConfig($website->domain, $attributes);
+        $createConfig = ! $website ?: Site::createConfig($website->domain, $attributes);
         if (! $createConfig) {
             $website->delete();
             Session::flash('error', 'Fail to create website config');
@@ -33,7 +31,7 @@ class Website extends Model
             return false;
         }
         if ($website->active) {
-            self::enableSite($website->domain);
+            Site::enableSite($website->domain);
             Nginx::restart();
         }
 
@@ -43,8 +41,10 @@ class Website extends Model
     public function update(array $attributes = [], array $options = [])
     {
         $result = true;
-        if ($this instanceof Website
-        && $this->exists()) {
+        if (
+            $this instanceof Website
+            && $this->exists()
+        ) {
             $pathExists = Website::where('path', $attributes['path'])
                 ->where('id', '!=', $this->id)->exists();
             $domainExists = Website::getSite($attributes['domain'])
@@ -64,7 +64,7 @@ class Website extends Model
             }
 
             if (isset($attributes['active'])) {
-                self::enableSite($attributes['domain'], $attributes['active']);
+                Site::enableSite($attributes['domain'], $attributes['active']);
             }
             Nginx::restart();
         } elseif ($this instanceof Collection) {

@@ -4,6 +4,7 @@ namespace App\Libraries;
 
 use App\Libraries\Facades\Disk;
 use App\Libraries\Facades\Log;
+use App\Libraries\Facades\Site;
 use App\Models\Website;
 use Exception;
 
@@ -12,16 +13,18 @@ class Nginx
     public static function test(string $domain = '')
     {
         $basepath = empty($domain)
-            ? Site::$nginxPath.'/nginx.conf'
+            ? (new Site)->nginxPath.'/nginx.conf'
             : base_path().'/storage/webconfig/nginx.conf';
 
         if (! empty($domain)) {
             $path = '/tmp/nginx-'.time().'.conf';
-            Disk::createFile($path,
+            Disk::createFile(
+                $path,
                 str_replace(
                     'site.d/*.conf',
                     "site.d/{$domain}.conf",
-                    file_get_contents($basepath))
+                    file_get_contents($basepath)
+                )
             );
         }
 
@@ -41,7 +44,7 @@ class Nginx
     public static function testNginxConf(?string $path = null)
     {
         if ($path == null) {
-            $path = Site::$nginxPath.'/nginx-test.conf';
+            $path = (new Site)->nginxPath.'/nginx-test.conf';
         }
 
         $exec = Commander::shell('nginx -t -c '.$path);
@@ -55,6 +58,7 @@ class Nginx
 
     public static function restart(): void
     {
+        sleep(1);
         Commander::exec('nginx -s reload');
     }
 
@@ -63,7 +67,10 @@ class Nginx
         $from = $model->path;
         $to = $attributes['path'];
         if (! file_exists(dirname($to))) {
-            mkdir(dirname($to), 755, true);
+            // mkdir(dirname($to), 755, true);
+            $dirname = dirname($to);
+            Commander::shell("mkdir -p {$dirname}");
+            Commander::shell("chmod -R 755 {$dirname}");
         }
 
         Disk::cp($from, $to);
@@ -82,7 +89,7 @@ class Nginx
         $from = $model->domain;
         $to = $attributes['domain'];
 
-        $model::enableSite($from, false);
+        Site::enableSite($from, false);
 
         $oldConfigPath = Site::getConfigPath($from);
         $newConfigPath = Site::getConfigPath($to);
@@ -90,7 +97,8 @@ class Nginx
         $config = str_replace(
             'server_name '.$from,
             'server_name '.$to,
-            $config);
+            $config
+        );
         $logPathFrom = Log::getLogPath($from);
         $logPathTo = Log::getLogPath($to);
         $config = str_replace(
@@ -117,7 +125,7 @@ class Nginx
         }
         Disk::rm($oldConfigPath);
         if (isset($attributes['active']) && $attributes['active'] == true) {
-            $model::enableSite($to);
+            Site::enableSite($to);
             self::restart();
         }
 
@@ -131,5 +139,8 @@ class Nginx
          * - ssl_certificate
          * - ssl_certificate_key
          */
+        $getConfig = Site::getConfigPath($domain);
+        $readConfig = file_get_contents($getConfig);
+        dd($domain, $certPath, $keyPath, $getConfig, $readConfig);
     }
 }

@@ -1,4 +1,9 @@
-FROM alpine:3.19
+FROM golang:1.22.5-alpine3.20 as gobuilder
+WORKDIR /app
+COPY infra/proxy /app
+RUN go build -o main main.go
+
+FROM alpine:3.20
 
 ENV PS1="\[\e]0;\u@\h: \w\a\]${whoami}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
 
@@ -9,6 +14,8 @@ RUN \
     chmod +x /tmp/apk.sh && sh /tmp/apk.sh && rm -rf /tmp/apk.sh && \
     curl -o /tmp/composer-setup.php https://getcomposer.org/installer && \
     php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer
+
+COPY --from=gobuilder /app/main /usr/bin/server-proxy
 
 COPY ./infra/cron.txt /tmp/
 RUN cat /tmp/cron.txt >> /etc/crontabs/root && rm /tmp/cron.txt
@@ -24,8 +31,8 @@ COPY ./infra/supervisord.conf /etc/supervisord.conf
 COPY ./infra/start.sh /run/
 RUN chmod +x /run/start.sh
 
-ADD --chown=nginx:nginx ./web /app
-ADD ./infra/db.sqlite /app/database/
+COPY --chown=nginx:nginx ./web /app
+COPY ./infra/db.sqlite /app/database/
 COPY --chown=nginx:nginx ./infra/.env /app/.env
 RUN chmod +x /app/artisan
 

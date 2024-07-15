@@ -38,6 +38,7 @@
                 
                 $filepath = str_replace('//', '/', $fullPath.'/'.$list['name']);
                 $mime = is_file($filepath) ? mime_content_type($filepath) : false;
+                $perms = (int) substr(sprintf('%o', fileperms($filepath)), -4);
             @endphp
             <li class="list-group-item">
                 <div class="row">
@@ -57,6 +58,9 @@
                         @if ($list['name'] != '..')
                             @if ($list['type'] == 'file')
                             <span class="text-sm">[{{ $list['size'] }}]</span>
+                            @if (str_contains($mime, 'shellscript'))
+                            <a href="#execute" class="execute text-sm text-white" data-file="{{$list['name']}}">Execute</a> |
+                            @endif
                             @if (str_starts_with($mime, 'text') || str_contains($mime, 'json'))
                             <a href="#readfile" class="readfile text-sm text-white" data-file="{{$list['name']}}">View</a> |
                             @endif
@@ -81,4 +85,29 @@
     <form action="{{route('filemanager.action')}}?path={{$fullPath}}" method="POST" class="">
     @include('FileManager.action')
     </form>
+@endpush
+
+@push('js')
+    <script>
+        $(document).ready(function(){
+            $(".execute").click(function(){
+                const data = JSON.parse($(this).parent().find('data').text())
+                $.ajax({
+                    url: '{{route('filemanager.action')}}?path={{$fullPath}}',
+                    type: 'PATCH',
+                    data: {
+                        _token: '{{csrf_token()}}',
+                        name: data.name,
+                        type: 'execute'
+                    },
+                    success: function(resp){
+                        toastr.success(resp)
+                    },
+                    error: function(xhr, err, errThrow){
+                        toastr.error(xhr.responseText)
+                    }
+                })
+            })
+        })
+    </script>
 @endpush

@@ -20,8 +20,8 @@ class SSL
         }
 
         $config = trim(file_get_contents($configPath));
-        preg_match('|'.self::$pubStart.'\s+([a-zA-Z0-9\.\/]+);|i', $config, $match1);
-        preg_match('|'.self::$keyStart.'\s+([a-zA-Z0-9\.\/]+);|i', $config, $match2);
+        preg_match('|'.self::$pubStart.'\s+([a-zA-Z0-9\.\/\-]+);|i', $config, $match1);
+        preg_match('|'.self::$keyStart.'\s+([a-zA-Z0-9\.\/\-]+);|i', $config, $match2);
 
         return (object) [
             'public' => empty($match1) ? false : $match1[1],
@@ -53,8 +53,8 @@ class SSL
         }
 
         $config = trim(file_get_contents($configPath));
-        preg_match('|'.self::$pubStart.'\s+([a-zA-Z0-9\.\/]+);|i', $config, $match1);
-        preg_match('|'.self::$keyStart.'\s+([a-zA-Z0-9\.\/]+);|i', $config, $match2);
+        preg_match('|'.self::$pubStart.'\s+([a-zA-Z0-9\.\/\-]+);|i', $config, $match1);
+        preg_match('|'.self::$keyStart.'\s+([a-zA-Z0-9\.\/\-]+);|i', $config, $match2);
 
         $pubExists = isset($match1[1]) ? $match1[1] : false;
         $keyExists = isset($match2[1]) ? $match2[1] : false;
@@ -62,7 +62,8 @@ class SSL
         if (
             ! ($pubExists && $keyExists)
             || (preg_match("|#(\s+)?{$match1[0]}|i", $config)
-            || preg_match("|#(\s+)?{$match2[0]}|i", $config))) {
+                || preg_match("|#(\s+)?{$match2[0]}|i", $config))
+        ) {
             return false;
         }
 

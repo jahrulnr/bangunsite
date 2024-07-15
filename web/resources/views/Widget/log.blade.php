@@ -13,7 +13,7 @@
 			</div>
 			<div class="modal-footer justify-content-end">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				@yield('modal-button', $button ?? '')
+				{!! $button ?? "" !!} @yield('modal-button', '')
 			</div>
 		</div>
 	</div>

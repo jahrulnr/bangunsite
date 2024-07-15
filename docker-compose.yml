@@ -11,7 +11,7 @@ services:
     ports:
       - "127.0.0.1:7080:80"
       - "127.0.0.1:7443:443"
-      - "127.0.0.1:8080:8000"
+      - "127.0.0.1:8080:8080"
     restart: unless-stopped
     cap_add:
       - SYS_PTRACE
@@ -31,64 +31,6 @@ services:
     container_name: mail-server
     ports:
       - "127.0.0.1:8081:1080"
-    networks:
-      - bangunsite
-
-  grafana:
-    image: grafana/grafana
-    container_name: bangunsite-grafana
-    user: '0'
-    restart: unless-stopped
-    # entrypoint: sh -c "sed -i 's/472/1000/g' /etc/passwd && sed -i 's/472/1000/g' /etc/group && /run.sh"
-    depends_on:
-      - prometheus
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/dashboard.json
-    volumes:
-      - ./data/grafana/lib:/var/lib/grafana:rw
-      - ./infra/grafana/dashboard.json:/var/lib/grafana/dashboards/dashboard.json
-      - ./infra/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
-      - ./infra/grafana/datasource.yml:/etc/grafana/provisioning/datasources/dashboard.yml
-    ports:
-    - '127.0.0.1:3000:3000'
-    networks:
-      - bangunsite
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: bangunsite-prometheus
-    restart: unless-stopped
-    volumes:
-      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - 127.0.0.1:9090:9090
-    networks:
-      - bangunsite
-
-  node-exporter:
-    image: quay.io/prometheus/node-exporter:latest
-    container_name: bangunsite-node-exporter
-    restart: unless-stopped
-    depends_on:
-      - prometheus
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-      - /:/host:ro,rslave
-    command: 
-      - '--path.rootfs=/host'
-      - '--path.procfs=/host/proc' 
-      - '--path.sysfs=/host/sys'
-      - --collector.filesystem.ignored-mount-points
-      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
-    ports:
-      - 127.0.0.1:9100:9100
     networks:
       - bangunsite
 

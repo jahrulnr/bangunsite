@@ -12,12 +12,28 @@ class Notification extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $mailData;
+
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct(array $mailData)
     {
-        //
+        $this->mailData = $mailData;
+        $this->validate();
+    }
+
+    public function validate()
+    {
+        if (! isset($this->mailData['title']) || empty($this->mailData['title'])) {
+            $this->mailData['title'] = 'Notification';
+        }
+        if (! isset($this->mailData['subject']) || empty($this->mailData['subject'])) {
+            $this->mailData['subject'] = env('APP_NAME').' Notification';
+        }
+        if (! isset($this->mailData['body']) || empty($this->mailData['body'])) {
+            $this->mailData['body'] = 'Hei, this is sample email to you.';
+        }
     }
 
     /**
@@ -26,7 +42,7 @@ class Notification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Notification',
+            subject: $this->mailData['subject'],
         );
     }
 
@@ -36,7 +52,7 @@ class Notification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'Mail.notification',
         );
     }
 

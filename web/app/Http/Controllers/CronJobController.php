@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Jobs\RunCommand;
 use App\Libraries\Commander;
 use App\Libraries\Facades\Disk;
-use App\Libraries\Facades\Log;
 use App\Models\Cronjob;
 use Carbon\Carbon;
 use Error;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class CronJobController extends Controller

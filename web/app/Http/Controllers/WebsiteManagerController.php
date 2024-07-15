@@ -5,14 +5,16 @@ namespace App\Http\Controllers;
 use App\Jobs\RunCommand;
 use App\Libraries\Commander;
 use App\Libraries\Facades\Disk;
+use App\Libraries\Facades\Site;
 use App\Libraries\Nginx;
-use App\Libraries\Site;
 use App\Libraries\SSL;
+use App\Mail\Notification;
 use App\Models\Website;
 use Error;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class WebsiteManagerController extends Controller
@@ -20,8 +22,8 @@ class WebsiteManagerController extends Controller
     public function index()
     {
         $website = Website::all();
-        $nginxConf = Site::getNginxConfig();
         $defConf = Site::getDefaultConfig();
+        $nginxConf = Site::getNginxConfig();
 
         return view('Website.index', compact('website', 'nginxConf', 'defConf'));
     }
@@ -84,12 +86,24 @@ class WebsiteManagerController extends Controller
             return back()->with('error', 'Fail to save website data');
         }
 
+        if (env('MAIL_NOTIFICATION', 'true') == 'true') {
+            try {
+                Mail::to(auth()->email)->send(new Notification([
+                    'title' => "{$r->domain} - Created Notification",
+                    'subject' => 'Your website has been created',
+                    'body' => 'This is a notification that your website has been created at '.now()->format('F j, Y H:i').'. If this was not you, please contact us immediately.',
+                ]));
+            } catch (Exception $e) {
+                Log::emergency($e->getMessage());
+            }
+        }
+
         return back()->with('success', $r->domain.' created');
     }
 
     public function edit($domain)
     {
-        $site = Website::getSite($domain);
+        $site = Site::getSite($domain);
         if (! $site->exists()) {
             return back()->with('error', "Site doesn't exists");
         }
@@ -123,8 +137,20 @@ class WebsiteManagerController extends Controller
             $input['active'] = false;
         }
 
-        $site = $site->first();
         if ($site->update($input)) {
+
+            if (env('MAIL_NOTIFICATION', 'true') == 'true') {
+                try {
+                    Mail::to(auth()->email)->send(new Notification([
+                        'title' => "{$site->domain} - Updated Notification",
+                        'subject' => 'Your website has been updated',
+                        'body' => 'This is a notification that your website has been updated at '.now()->format('F j, Y H:i').'. If this was not you, please contact us immediately.',
+                    ]));
+                } catch (Exception $e) {
+                    Log::emergency($e->getMessage());
+                }
+            }
+
             return redirect(route('website.edit', $r->domain))->with('success', 'Update successfully');
         }
 
@@ -146,7 +172,7 @@ class WebsiteManagerController extends Controller
             Disk::createFile($pathConfig, $newConfig);
             $test = Nginx::test($site->domain);
         } else {
-            $pathConfig = Site::$nginxPath.'/http.d/default.conf';
+            $pathConfig = (new Site)->nginxPath.'/http.d/default.conf';
             if (! is_writable($pathConfig)) {
                 return back()
                     ->with('error', 'Update failed! Default configuration is not writeable');
@@ -161,6 +187,19 @@ class WebsiteManagerController extends Controller
 
         if ($test === true) {
             Nginx::restart();
+
+            if (env('MAIL_NOTIFICATION', 'true') == 'true') {
+                try {
+                    $site = $site->domain ?? 'Base Config';
+                    Mail::to(auth()->email)->send(new Notification([
+                        'title' => "{$site} - Updated Notification",
+                        'subject' => 'Your website configuration has been updated',
+                        'body' => 'This is a notification that your website configuration has been updated at '.now()->format('F j, Y H:i').'. If this was not you, please contact us immediately.',
+                    ]));
+                } catch (Exception $e) {
+                    Log::emergency($e->getMessage());
+                }
+            }
 
             return back()->with('success', 'Update successfully');
         }
@@ -256,11 +295,22 @@ class WebsiteManagerController extends Controller
             @symlink('../../live/'.$site->domain.'/privkey.pem', $privateLink);
             Nginx::setCustomSSL($site->domain, $publicPath, $privatePath);
         } else {
+            $public = dirname($certPath->public);
+            $private = dirname($certPath->private);
+            if (! is_dir($public) && ! is_link($public)) {
+                Commander::shell("mkdir -p {$public}");
+            }
+            if (! is_dir($private) && ! is_link($private)) {
+                Commander::shell("mkdir -p {$private}");
+            }
+
             try {
                 $put = file_put_contents($certPath->private, $privateCert)
                     && file_put_contents($certPath->public, $publicCert);
             } catch (Exception $e) {
                 $put = false;
+                // dd($e->getMessage());
+                Log::emergency($e->getMessage());
             }
         }
 
@@ -276,19 +326,31 @@ class WebsiteManagerController extends Controller
             return back()->with('error', 'Configuration not valid!');
         }
 
-        $nginxConf = Site::$nginxPath.'/nginx.conf';
+        $nginxConf = (new Site)->nginxPath.'/nginx.conf';
         if (! is_writable($nginxConf)) {
             return back()
                 ->with('error', 'Update failed! Nginx configuration is not writeable');
         }
 
-        $fileTest = Site::$nginxPath.'/nginx-test.conf';
+        $fileTest = (new Site)->nginxPath.'/nginx-test.conf';
         Disk::createFile($fileTest, $r->content);
         $test = Nginx::testNginxConf();
         unlink($fileTest);
         if ($test === true) {
             Disk::createFile($nginxConf, $r->content);
             Nginx::restart();
+
+            if (env('MAIL_NOTIFICATION', 'true') == 'true') {
+                try {
+                    Mail::to(auth()->email)->send(new Notification([
+                        'title' => 'Nginx Configuration - Updated Notification',
+                        'subject' => 'Your Nginx configuration has been updated',
+                        'body' => 'This is a notification that your Nginx configuration has been updated at '.now()->format('F j, Y H:i').'. If this was not you, please contact us immediately.',
+                    ]));
+                } catch (Exception $e) {
+                    Log::emergency($e->getMessage());
+                }
+            }
 
             return back()->with('success', 'Nginx configuration updated successfully.');
         }
@@ -307,6 +369,18 @@ class WebsiteManagerController extends Controller
 
         Site::removeSite($site->first(), $r->clean);
         $site->delete();
+
+        if (env('MAIL_NOTIFICATION', 'true') == 'true') {
+            try {
+                Mail::to(auth()->email)->send(new Notification([
+                    'title' => "{$domain} - Deleted Notification",
+                    'subject' => 'Your website configuration has been deleted',
+                    'body' => "This is a notification that your {$domain} has been deleted at ".now()->format('F j, Y H:i').'. If this was not you, please contact us immediately.',
+                ]));
+            } catch (Exception $e) {
+                Log::emergency($e->getMessage());
+            }
+        }
 
         return response()->json([
             'msg' => 'Site deleted successfully',
