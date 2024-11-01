@@ -24,7 +24,7 @@ class Site
 
     public function getDefaultConfig(): string
     {
-        return file_get_contents($this->nginxPath.'/http.d/default.conf');
+        return file_get_contents($this->nginxPath.'/conf.d/default.conf');
     }
 
     public function getBaseConfig(): string

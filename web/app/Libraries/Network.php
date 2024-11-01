@@ -23,8 +23,10 @@ class Network
         $tx_path = '/statistics/tx_bytes';
 
         foreach ($ifaces as $iface) {
-            $rx[$iface] = trim(file_get_contents($path.$iface.$rx_path));
-            $tx[$iface] = trim(file_get_contents($path.$iface.$tx_path));
+            if (file_exists($path.$iface.$rx_path))
+                $rx[$iface] = trim(file_get_contents($path.$iface.$rx_path));
+            if (file_exists($path.$iface.$tx_path))
+                $tx[$iface] = trim(file_get_contents($path.$iface.$tx_path));
         }
 
         return [

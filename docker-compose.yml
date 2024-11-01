@@ -19,7 +19,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./web:/app:rw
       - ./data/www:/www:rw
-      - ./infra/nginx/default.conf:/etc/nginx/http.d/default.conf:rw
+      - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf:rw
       - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./infra/.env:/app/.env:rw
       - ./data/logs:/var/log:rw

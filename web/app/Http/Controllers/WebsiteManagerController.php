@@ -172,7 +172,7 @@ class WebsiteManagerController extends Controller
             Disk::createFile($pathConfig, $newConfig);
             $test = Nginx::test($site->domain);
         } else {
-            $pathConfig = (new Site)->nginxPath.'/http.d/default.conf';
+            $pathConfig = (new Site)->nginxPath.'/conf.d/default.conf';
             if (! is_writable($pathConfig)) {
                 return back()
                     ->with('error', 'Update failed! Default configuration is not writeable');
