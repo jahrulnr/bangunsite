@@ -45,4 +45,4 @@ services:
 networks:
   bangunsite:
     external: true
-    name: cloudflared_bangunsoft
+    name: bangunsite

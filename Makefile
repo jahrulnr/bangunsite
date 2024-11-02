@@ -8,7 +8,7 @@ rebuild-vm: build-vm
 	docker-compose logs -f bangunsite
 up-vm: 
 	if [ -z `docker images -q bangunsite` ]; then make build-vm; fi
-	if [ -z `docker network ls -qf name=bangunsite` ]; then docker network create -d bridge cloudflared_bangunsoft; fi
+	if [ -z `docker network ls -qf name=bangunsite` ]; then docker network create -d bridge bangunsite; fi
 	if [ ! -d ./data ]; then \
 		mkdir -p ./data/logs/nginx \
 		&& mkdir ./data/logs/php \
