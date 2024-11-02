@@ -1,76 +1,130 @@
 # BangunSite
 
-This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PHP 8.2. It provides a convenient way to manage multiple web applications within a Dockerized environment. Laravel is utilized for its powerful features in managing web applications, while Docker ensures portability and consistency across different environments.
-
-![dashboard](./screenshot/Dashboard.png)
-![website](./screenshot/Website.png)
-![filemanager](./screenshot/FileManager.png)
-![mountmanager](./screenshot/MountManager.png)
-![cronjob](./screenshot/Cronjobs.png)
-![docker](./screenshot/Docker.png)
-![logs](./screenshot/Logs.png)
+A web-based server management tool with integrated SSH client, Docker container management, and SSL configuration capabilities.
 
 ## Features
 
-- **Laravel Integration**: Utilizes Laravel for managing web applications and provides a convenient interface for tasks such as database migrations, seeding, and running artisan commands.
-  
-- **Dockerized Environment**: Runs on Docker for easy deployment and scalability. Each component, including Nginx, Certbot, and PHP 8.2, is containerized for isolation and portability.
+- 🔒 SSL/TLS Management
+- 🐳 Docker Container Management
+- 💻 Web-based SSH Client
+- 📁 File Manager
+- 🔄 Reverse Proxy Support
+- ⚡ PageSpeed Optimization
 
-- **Nginx Server**: Acts as a server for web applications created using Laravel. Nginx handles incoming HTTP requests and forwards them to the appropriate Laravel application.
-
-- **Certbot Integration**: Includes Certbot for automating the process of obtaining and renewing SSL certificates. This ensures secure communication between clients and the web server.
-
-- **PHP 8.2 Support**: Runs Laravel applications specifically on PHP 8.2, leveraging the latest features and improvements in the PHP language.
-
-## Getting Started
-
-### Prerequisites
+## System Requirements
 
 - Docker
 - Docker Compose
 
-### Installation
+### Port Requirements
 
-1. Clone this repository to your local machine:
+#### Development Environment
+- 7080 (HTTP)
+- 7443 (HTTPS)
+- 8080 (Web Management)
+- 13999 (SSH Client)
 
-    ```bash
-    git clone git@github.com:jahrulnr/bangunsite.git
-    ```
-    or
-    ```bash
-    docker pull jahrulnr/bangunsite:latest
-    ```
+#### Production Environment
+- 80 (HTTP)
+- 443 (HTTPS)
+- 8080 (Web Management)
+- 13999 (SSH)
 
-2. Navigate to the project directory:
+## Quick Start
 
-    ```bash
-    cd bangunsite
-    ```
+1. Clone this repository:
+```bash
+git clone git@github.com:jahrulnr/bangunsite.git
+cd bangunsite
+```
 
-3. Build and start the Docker containers:
+2. Start the services:
+```bash
+make up-vm
+```
 
-    ```bash
-    make up-vm
-    make cp-db
-    docker exec -i bangunsite artisan key:generate
-    make migrate
-    ```
+3. Initialize the database (first-time setup only):
+```bash
+docker exec bangunsite artisan db:seed
+```
 
-4. Access the Laravel BangunSite at `https://localhost:8080` in your web browser.
+4. Open your browser and navigate to `https://localhost:8080/`
+Then log in using:
+- Username: `admin@demo.com`
+- Password: `123456`
 
-### Default Account
+## Project Structure
 
-email: ```admin@demo.com```\
-password: ```123456```
+```
+.
+├── config/               # Configuration files
+│   ├── nginx/            # Nginx configurations
+│   ├── php/              # PHP configurations
+│   ├── webconfig/        # Web server configurations
+│   └── supervisord.conf  # Supervisor configuration
+├── proxy/                # Reverse proxy service
+├── web/                  # Main web application
+├── xterm/                # SSH client implementation
+├── compose.yml           # Docker compose configuration
+└── Dockerfile            # Main container configuration
+```
 
-### Configuration
+## Components
 
-You can change .env configuration at ```./infra/.env``` (See docker-compose.yml for details)
+### Web Management Interface
+The main web interface for managing server configurations, containers, and files. Built with Laravel and AdminLTE.
 
-## Contributing
+### SSH Client
+A web-based SSH client implementation using:
+- Go backend for SSH connection handling
+- Xterm.js for terminal emulation
+- WebSocket for real-time communication
 
-Contributions are welcome! Feel free to open issues or submit pull requests to improve this project.
+### Reverse Proxy
+A Go-based reverse proxy service handling SSL termination and request forwarding.
+
+### Mail Server
+Includes MailCatcher for email testing and development.
+
+## Development
+
+For development, the following directories are mounted as volumes:
+- `./web/app`
+- `./web/database`
+- `./web/public`
+- `./web/resources`
+- `./web/routes`
+
+This allows for real-time code changes without rebuilding the container.
+
+## Configuration
+
+### SSL Certificates
+Default self-signed certificates are automatically generated on first run. For production, replace with valid certificates in:
+```
+data/webconfig/ssl/live/default/
+```
+
+### Nginx Configuration
+Custom Nginx configurations can be added to:
+```
+data/webconfig/site.d/
+```
+
+### PHP Configuration
+PHP configurations can be modified in:
+```
+data/php/php.ini
+```
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request

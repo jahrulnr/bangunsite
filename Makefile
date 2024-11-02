@@ -1,14 +1,6 @@
 VMTag=bangunsite:1.0
 VMName=bangunsite
 
-install: build-vm
-### makesure to make down-vm before run this command
-###	sudo rm -r data template web/vendor web/.env web/tmp
-	@make up-vm
-	@make cp-db
-	@docker exec -i bangunsite artisan key:generate
-	@make migrate
-
 build-vm:
 	docker build . --tag ${VMTag} -f Dockerfile --progress=plain --network=host
 rebuild-vm: build-vm
@@ -16,7 +8,7 @@ rebuild-vm: build-vm
 	docker-compose logs -f bangunsite
 up-vm: 
 	if [ -z `docker images -q bangunsite` ]; then make build-vm; fi
-	if [ -z `docker network ls -qf name=cloudflared_bangunsoft` ]; then docker network create -d bridge cloudflared_bangunsoft; fi
+	if [ -z `docker network ls -qf name=bangunsite` ]; then docker network create -d bridge cloudflared_bangunsoft; fi
 	if [ ! -d ./data ]; then \
 		mkdir -p ./data/logs/nginx \
 		&& mkdir ./data/logs/php \
@@ -25,8 +17,6 @@ up-vm:
 	@make precommit
 	docker-compose --compatibility up -d bangunsite mail-server
 	docker-compose logs -f bangunsite
-restart-vm:
-	docker-compose down && docker-compose up -d bangunsite mail-server
 logs-vm:
 	docker logs -f -n 100 bangunsite
 down-vm:
@@ -41,10 +31,6 @@ clear-cache:
 	docker exec -i ${VMName} artisan session:flush
 bash-vm:
 	docker exec -it ${VMName} bash
-sh-vm:
-	docker exec -it ${VMName} sh
-cp-db:
-	docker cp ./config/db.sqlite ${VMName}:/storage/db.sqlite
 migrate:
 	docker exec -i ${VMName} php artisan migrate
 
@@ -53,10 +39,6 @@ install-template:
 	if [ ! -d ./template ]; then sh ./config/template/install.sh; fi
 run-template: install-template
 	cd template && php -S localhost:9111
-
-prune-images:
-	docker builder prune
-	docker image prune
 
 precommit:
 	cp pre-commit .git/hooks/
