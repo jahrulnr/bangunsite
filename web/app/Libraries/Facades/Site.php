@@ -25,7 +25,7 @@ class Site extends \Illuminate\Support\Facades\Facade
 {
     public function __get($name)
     {
-        return (new \App\Libraries\Site)->$name;
+        return (new \App\Libraries\Site())->$name;
     }
 
     protected static function getFacadeAccessor()

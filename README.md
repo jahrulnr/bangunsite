@@ -1,8 +1,14 @@
-![dashboard](https://raw.githubusercontent.com/jahrulnr/bangunsite/master/screenshots/dashboard.png)
-
 # BangunSite
 
 This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PHP 8.2. It provides a convenient way to manage multiple web applications within a Dockerized environment. Laravel is utilized for its powerful features in managing web applications, while Docker ensures portability and consistency across different environments.
+
+![dashboard](./screenshot/Dashboard.png)
+![website](./screenshot/Website.png)
+![filemanager](./screenshot/FileManager.png)
+![mountmanager](./screenshot/MountManager.png)
+![cronjob](./screenshot/Cronjobs.png)
+![docker](./screenshot/Docker.png)
+![logs](./screenshot/Logs.png)
 
 ## Features
 
@@ -13,8 +19,6 @@ This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PH
 - **Nginx Server**: Acts as a server for web applications created using Laravel. Nginx handles incoming HTTP requests and forwards them to the appropriate Laravel application.
 
 - **Certbot Integration**: Includes Certbot for automating the process of obtaining and renewing SSL certificates. This ensures secure communication between clients and the web server.
-
-- **Cronjobs Integration**: With this feature, you can define and manage cronjobs directly from the web interface. This includes scheduling recurring tasks and executing commands.
 
 - **PHP 8.2 Support**: Runs Laravel applications specifically on PHP 8.2, leveraging the latest features and improvements in the PHP language.
 
@@ -30,15 +34,29 @@ This project is a BangunSite built using Laravel, Docker, Nginx, Certbot, and PH
 1. Clone this repository to your local machine:
 
     ```bash
-    git clone --branch development https://github.com/jahrulnr/bangunsite.git
-
-2. Build and start the Docker containers:
-
+    git clone git@github.com:jahrulnr/bangunsite.git
+    ```
+    or
     ```bash
-    make install
+    docker pull jahrulnr/bangunsite:latest
     ```
 
-4. Access the Laravel BangunSite at `http://localhost:8080` in your web browser.
+2. Navigate to the project directory:
+
+    ```bash
+    cd bangunsite
+    ```
+
+3. Build and start the Docker containers:
+
+    ```bash
+    make up-vm
+    make cp-db
+    docker exec -i bangunsite artisan key:generate
+    make migrate
+    ```
+
+4. Access the Laravel BangunSite at `https://localhost:8080` in your web browser.
 
 ### Default Account
 

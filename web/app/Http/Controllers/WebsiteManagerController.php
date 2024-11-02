@@ -76,10 +76,12 @@ class WebsiteManagerController extends Controller
             return back()->with('error', $validate);
         }
 
-        $input = $r->only((new Website)->getFillable());
+        $input = $r->only((new Website())->getFillable());
         if ($r->name == null) {
             $input['name'] = $r->domain;
         }
+
+        $input['active'] = $r->active == null ? false : true;
         $website = Website::create($input);
 
         if (! $website) {
@@ -129,7 +131,7 @@ class WebsiteManagerController extends Controller
             return back()->with('error', $validate);
         }
 
-        $input = $r->only((new Website)->getFillable());
+        $input = $r->only((new Website())->getFillable());
         if ($r->name == null) {
             $input['name'] = $r->domain;
         }
@@ -138,7 +140,6 @@ class WebsiteManagerController extends Controller
         }
 
         if ($site->update($input)) {
-
             if (env('MAIL_NOTIFICATION', 'true') == 'true') {
                 try {
                     Mail::to(auth()->email)->send(new Notification([
@@ -172,7 +173,7 @@ class WebsiteManagerController extends Controller
             Disk::createFile($pathConfig, $newConfig);
             $test = Nginx::test($site->domain);
         } else {
-            $pathConfig = (new Site)->nginxPath.'/conf.d/default.conf';
+            $pathConfig = (new Site())->nginxPath.'/http.d/default.conf';
             if (! is_writable($pathConfig)) {
                 return back()
                     ->with('error', 'Update failed! Default configuration is not writeable');
@@ -326,13 +327,13 @@ class WebsiteManagerController extends Controller
             return back()->with('error', 'Configuration not valid!');
         }
 
-        $nginxConf = (new Site)->nginxPath.'/nginx.conf';
+        $nginxConf = (new Site())->nginxPath.'/nginx.conf';
         if (! is_writable($nginxConf)) {
             return back()
                 ->with('error', 'Update failed! Nginx configuration is not writeable');
         }
 
-        $fileTest = (new Site)->nginxPath.'/nginx-test.conf';
+        $fileTest = (new Site())->nginxPath.'/nginx-test.conf';
         Disk::createFile($fileTest, $r->content);
         $test = Nginx::testNginxConf();
         unlink($fileTest);

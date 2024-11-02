@@ -164,6 +164,7 @@ class Disk
                     'name' => $list,
                     'icon' => $this->getIcon($fullPath),
                     'permission' => $this->perm($fullPath),
+                    'mime' => 'directory',
                     'link' => ! is_link($fullPath) ?: readlink($fullPath),
                     'size' => false,
                 ];
@@ -177,6 +178,7 @@ class Disk
                 'name' => $list,
                 'icon' => $this->getIcon($fullPath),
                 'permission' => $this->perm($fullPath),
+                'mime' => mime_content_type($fullPath),
                 'link' => ! is_link($fullPath) ?: readlink($fullPath),
                 'size' => $readable ? $this->bytesReadable($size) : $size,
             ];

@@ -11,7 +11,10 @@ use Symfony\Component\Process\Process;
 
 class RunCommand implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public $timeout = 300;
 

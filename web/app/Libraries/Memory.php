@@ -4,7 +4,7 @@ namespace App\Libraries;
 
 class Memory
 {
-    public static function info()
+    public function info(): object
     {
         $info = Commander::exec('free -h');
         $stats = null;

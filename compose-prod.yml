@@ -1,0 +1,35 @@
+version: '3'
+services: 
+  bangunsite: 
+    image: bangunsite:1.0
+    container_name: bangunsite
+    privileged: true
+    cpus: 0.5
+    mem_limit: 256m
+    environment:
+      - TZ=Asia/Jakarta
+      - ENV=production
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+      - "13999:13999"
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE
+      - NET_ADMIN
+    ulimits:
+      nofile:
+        soft: "65536"
+        hard: "65536"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/storage:rw
+    networks:
+      - bangunsite
+
+networks:
+  bangunsite:
+    external: true
+    name: cloudflared_bangunsoft

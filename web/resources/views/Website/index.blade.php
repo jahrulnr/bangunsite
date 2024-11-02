@@ -38,7 +38,7 @@
                             </a>
                         </td>
                     </tr>
-                @else                    
+                @else
                 @foreach ($website as $data)
                     <tr>
                         <td style="vertical-align: middle">

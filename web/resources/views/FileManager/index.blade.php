@@ -1,5 +1,5 @@
 @extends('layout')
-@section('head', 'File Manager')
+@section('head', $title ?? 'File Manager')
 
 @push('css')
 <style>
@@ -37,8 +37,6 @@
                     : '');
                 
                 $filepath = str_replace('//', '/', $fullPath.'/'.$list['name']);
-                $mime = is_file($filepath) ? mime_content_type($filepath) : false;
-                $perms = (int) substr(sprintf('%o', fileperms($filepath)), -4);
             @endphp
             <li class="list-group-item">
                 <div class="row">
@@ -51,17 +49,17 @@
                         </span>
                         <span class="{{ $list['type'] == 'file' && preg_match('/77(7|5)/', $list['permission'])?'text-success':'' }}">
                             <span class="text-sm">{{ $list['name'] }} {!! $linked !!}</span>
-                            {{-- {{$mime}} --}}
+                            {{-- {{$list["mime"]}} --}}
                         </span>
                     </div>
                     <div class="col-12 col-md-auto my-auto ml-auto">
                         @if ($list['name'] != '..')
                             @if ($list['type'] == 'file')
                             <span class="text-sm">[{{ $list['size'] }}]</span>
-                            @if (str_contains($mime, 'shellscript'))
+                            @if (str_contains($list["mime"], 'shellscript'))
                             <a href="#execute" class="execute text-sm text-white" data-file="{{$list['name']}}">Execute</a> |
                             @endif
-                            @if (str_starts_with($mime, 'text') || str_contains($mime, 'json'))
+                            @if (str_starts_with($list["mime"], 'text') || str_contains($list["mime"], 'json'))
                             <a href="#readfile" class="readfile text-sm text-white" data-file="{{$list['name']}}">View</a> |
                             @endif
                             @endif

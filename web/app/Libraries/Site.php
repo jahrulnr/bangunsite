@@ -24,17 +24,17 @@ class Site
 
     public function getDefaultConfig(): string
     {
-        return file_get_contents($this->nginxPath.'/conf.d/default.conf');
+        return file_get_contents($this->nginxPath.'/http.d/default.conf');
     }
 
     public function getBaseConfig(): string
     {
-        return file_get_contents(base_path().$this->baseConfig);
+        return file_get_contents($this->baseConfig);
     }
 
     public function getActiveConfigPath(string $domain): string
     {
-        $path = base_path().$this->activePath;
+        $path = $this->activePath;
         is_dir($path) or mkdir($path, 0750, true);
 
         return $path.'/'.$domain.'.conf';
@@ -42,7 +42,7 @@ class Site
 
     public function getConfigPath(string $domain): string
     {
-        $path = base_path().$this->configPath;
+        $path = $this->configPath;
         is_dir($path) or mkdir($path, 0750, true);
 
         return $path.'/'.$domain.'.conf';
@@ -72,8 +72,8 @@ class Site
 
     public function createConfig(string $domain, array $attributes): bool
     {
-        $attributes['ssl_cert'] = '/app/storage/webconfig/ssl/live/default/cert.pem';
-        $attributes['ssl_key'] = '/app/storage/webconfig/ssl/live/default/key.pem';
+        $attributes['ssl_cert'] = '/storage/webconfig/ssl/live/default/cert.pem';
+        $attributes['ssl_key'] = '/storage/webconfig/ssl/live/default/key.pem';
         $replacement = [
             '<ssl_cert>' => '',
             '<ssl_key>' => '',
@@ -91,7 +91,7 @@ class Site
         is_dir($attributes['path']) ?: mkdir($attributes['path'], 755, true);
         $indexFile = $attributes['path'].'/index.html';
         copy($this->defaultPath.'/index.html', $indexFile);
-        Commander::exec("chown -R nginx:nginx {$attributes['path']}");
+        Commander::exec("chown -R apps:apps {$attributes['path']}");
 
         return Disk::createFile(
             $this->getConfigPath($domain),
@@ -101,7 +101,7 @@ class Site
 
     private function copySSL(array $attributes)
     {
-        $domainCertPath = "/app/storage/webconfig/ssl/live/{$attributes['domain']}";
+        $domainCertPath = "/storage/webconfig/ssl/live/{$attributes['domain']}";
         if (! is_dir($domainCertPath)) {
             mkdir($domainCertPath);
         }

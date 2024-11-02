@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
 
         Cronjob::create([
             'name' => 'Lets Encrypt Renewal',
-            'payload' => 'certbot renew --post-hook \'nginx -s reload\'',
+            'payload' => 'certbot renew --post-hook \'supervisorctl restart nginx\'',
             'run_every' => 'day',
         ]);
     }

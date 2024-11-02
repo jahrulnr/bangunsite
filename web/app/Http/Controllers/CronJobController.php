@@ -34,7 +34,7 @@ class CronJobController extends Controller
         }
 
         if (Cronjob::create(
-            $r->only((new Cronjob)->getFillable())
+            $r->only((new Cronjob())->getFillable())
         )) {
             return back()->with('success', 'Cron created successfully');
         }
@@ -60,7 +60,7 @@ class CronJobController extends Controller
         }
 
         if ($cron->update(
-            $r->only((new Cronjob)->getFillable())
+            $r->only((new Cronjob())->getFillable())
         )) {
             return back()->with('success', 'Cron updated successfully');
         }

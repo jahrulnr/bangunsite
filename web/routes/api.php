@@ -1,10 +1,11 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Libraries\Disk;
-use App\Libraries\Network;
+use App\Http\Controllers\Api\ServerController;
+use App\Http\Controllers\Api\SshController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/server/info', [HomeController::class, 'info'])->name('server.info');
-Route::post('/server/traffic', [Network::class, 'traffic'])->name('server.traffic');
-Route::post('/server/diskIO', [Disk::class, 'simpleStat'])->name('server.diskIO');
+Route::post('/server/info', [ServerController::class, 'info'])->name('server.info');
+Route::post('/server/traffic', [ServerController::class, 'traffic'])->name('server.traffic');
+Route::post('/server/diskIO', [ServerController::class, 'disk'])->name('server.diskIO');
+
+Route::post('/validateSSH', [SshController::class, 'validate'])->name('api.ssh.validate');

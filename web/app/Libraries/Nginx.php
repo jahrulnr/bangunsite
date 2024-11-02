@@ -13,8 +13,8 @@ class Nginx
     public static function test(string $domain = '')
     {
         $basepath = empty($domain)
-            ? (new Site)->nginxPath.'/nginx.conf'
-            : base_path().'/storage/webconfig/nginx.conf';
+            ? (new Site())->nginxPath.'/nginx.conf'
+            : '/storage/webconfig/nginx.conf';
 
         if (! empty($domain)) {
             $path = '/tmp/nginx-'.time().'.conf';
@@ -34,7 +34,7 @@ class Nginx
         }
 
         $result = explode("\n", $exec);
-        if (strpos($result[1], 'success')) {
+        if (strpos($result[0], 'syntax is ok')) {
             return true;
         } else {
             return $result[0];
@@ -44,12 +44,12 @@ class Nginx
     public static function testNginxConf(?string $path = null)
     {
         if ($path == null) {
-            $path = (new Site)->nginxPath.'/nginx-test.conf';
+            $path = (new Site())->nginxPath.'/nginx-test.conf';
         }
 
         $exec = Commander::shell('nginx -t -c '.$path);
         $result = explode("\n", $exec);
-        if (strpos($result[1], 'success')) {
+        if (strpos($result[0], 'syntax is ok')) {
             return true;
         } else {
             return $result[0];
@@ -59,7 +59,7 @@ class Nginx
     public static function restart(): void
     {
         sleep(1);
-        Commander::exec('nginx -s reload');
+        Commander::exec('supervisorctl restart nginx');
     }
 
     public static function moveRoot(Website $model, array $attributes): bool

@@ -6,7 +6,7 @@ class FPM
 {
     protected $app;
 
-    private $path = '/etc/php82/';
+    private $path = '/etc/php/';
 
     private $ini = 'php.ini';
 

@@ -76,7 +76,7 @@ class FileManagerController extends Controller
         }
 
         $needChown = str_starts_with($path, env('WEB_PATH'))
-            ? "&& chown nginx:nginx '{$path}'"
+            ? "&& chown apps:apps '{$path}'"
             : '';
 
         switch ($r->type) {
@@ -202,7 +202,7 @@ class FileManagerController extends Controller
                 }
                 if (! file_exists($toPath)) {
                     $needChown = str_starts_with($path, env('WEB_PATH'))
-                        ? "&& chown nginx:nginx '{$path}'"
+                        ? "&& chown apps:apps '{$path}'"
                         : '';
                     shell_exec("mkdir -p '{$toPath}' && chmod 755 '{$toPath}' {$needChown}");
                 }

@@ -29,15 +29,15 @@ class ServerCommand extends ServeCommand
         $webPath = env('WEB_PATH');
         if (! is_dir($webPath)) {
             exec("mkdir -p '{$webPath}/default'");
-            copy('/app/storage/webconfig/index.html', $webPath.'/default/index.html');
-            copy('/app/storage/webconfig/healty.php', $webPath.'/default/healty.php');
-            exec("chown -R nginx:nginx '{$webPath}'");
+            copy('/storage/webconfig/index.html', $webPath.'/default/index.html');
+            copy('/storage/webconfig/healty.php', $webPath.'/default/healty.php');
+            exec("chown -R apps:apps '{$webPath}'");
         }
 
         $environmentFile = $this->option('env')
                             ? base_path('.env').'.'.$this->option('env')
                             : base_path('.env');
-        $iniFile = base_path('storage/webconfig/app.ini');
+        $iniFile = '/storage/webconfig/app.ini';
 
         $hasEnvironment = file_exists($environmentFile);
         $hasIni = file_exists($iniFile);
@@ -101,9 +101,9 @@ class ServerCommand extends ServeCommand
             : base_path('vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php');
 
         return [
-            (new PhpExecutableFinder)->find(false),
+            (new PhpExecutableFinder())->find(false),
             '-c',
-            '/app/storage/webconfig/app.ini',
+            '/storage/webconfig/app.ini',
             '-S',
             $this->host().':'.$this->port(),
             $server,

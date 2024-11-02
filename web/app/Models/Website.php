@@ -19,6 +19,10 @@ class Website extends Model
         'active',
     ];
 
+    protected $casts = [
+        'active' => 'boolean',
+    ];
+
     public static function create(array $attributes = [])
     {
         $website = static::query()->create($attributes);

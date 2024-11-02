@@ -4,7 +4,7 @@ namespace App\Libraries;
 
 class Network
 {
-    public static function interfaces(): array
+    public function interfaces(): array
     {
         $path = '/sys/class/net/';
         $interfaces = glob("{$path}*");
@@ -15,18 +15,20 @@ class Network
         return $ifaces;
     }
 
-    public static function traffic(): array
+    public function traffic(): array
     {
-        $ifaces = self::interfaces();
+        $ifaces = $this->interfaces();
         $path = '/sys/class/net/';
         $rx_path = '/statistics/rx_bytes';
         $tx_path = '/statistics/tx_bytes';
 
         foreach ($ifaces as $iface) {
-            if (file_exists($path.$iface.$rx_path))
+            if (file_exists($path.$iface.$rx_path)) {
                 $rx[$iface] = trim(file_get_contents($path.$iface.$rx_path));
-            if (file_exists($path.$iface.$tx_path))
+            }
+            if (file_exists($path.$iface.$tx_path)) {
                 $tx[$iface] = trim(file_get_contents($path.$iface.$tx_path));
+            }
         }
 
         return [

@@ -1,0 +1,2 @@
+# min   hour    day     month   weekday command
+# 0       0       *       *       *       echo -e "`date` `certbot renew --post-hook 'supervisorctl restart nginx'`\n" >> /app/storage/logs/certbot-cron.log

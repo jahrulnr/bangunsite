@@ -4,9 +4,9 @@ namespace App\Libraries;
 
 class SSL
 {
-    public static $confPath = '/app/storage/webconfig/site.d';
+    public static $confPath = '/storage/webconfig/site.d';
 
-    public static $sslPath = '/app/storage/webconfig/live';
+    public static $sslPath = '/storage/webconfig/live';
 
     private static $keyStart = 'ssl_certificate_key';
 

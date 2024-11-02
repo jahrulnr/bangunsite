@@ -4,9 +4,8 @@ namespace App\Libraries;
 
 class Cpu
 {
-    public static function count()
+    public function count(): int
     {
-
         $cpus = Commander::exec('echo $(cat /proc/cpuinfo | grep processor | wc -l)');
 
         return $cpus[0];
