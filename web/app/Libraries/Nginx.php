@@ -34,7 +34,7 @@ class Nginx
         }
 
         $result = explode("\n", $exec);
-        if (strpos($result[0], 'syntax is ok')) {
+        if (strpos($exec, 'syntax is ok')) {
             return true;
         } else {
             return $result[0];
@@ -49,7 +49,7 @@ class Nginx
 
         $exec = Commander::shell('nginx -t -c '.$path);
         $result = explode("\n", $exec);
-        if (strpos($result[0], 'syntax is ok')) {
+        if (strpos($exec, 'syntax is ok')) {
             return true;
         } else {
             return $result[0];
