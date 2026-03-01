@@ -43,10 +43,6 @@ if [ ! -L /app/storage ]; then
 fi
 chown -Rv apps:apps /storage/ >> /storage/app.log
 
-echo "--- Optimizing nginx.conf ---"
-procs=$(cat /proc/cpuinfo | grep processor | wc -l)
-sed -i -e "s/worker_processes auto/worker_processes $procs/" /etc/nginx/nginx.conf >> /storage/app.log
-
 if [ ! -f /www/default/index.html ]; then
     echo "--- Generate default /www ---"
     mkdir -p /www/default/
@@ -57,12 +53,7 @@ fi
 
 if [ ! -d /app/vendor ]; then
     echo "--- Install Laravel Vendor ---"
-    environment=`printenv ENV`
-    if [ "$ENV" = "production" ]; then 
-        composer install --no-cache --optimize-autoloader --no-dev >> /storage/app.log
-    else
-        composer install --no-cache --optimize-autoloader >> /storage/app.log
-    fi
+    composer install --no-cache --optimize-autoloader --no-dev >> /storage/app.log
     chown -vR apps:apps /app/vendor/ >> /storage/app.log
 fi
 
