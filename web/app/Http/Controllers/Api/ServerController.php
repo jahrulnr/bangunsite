@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Libraries\Facades\Disk;
 use App\Libraries\Facades\Network;
+use App\Libraries\Facades\Log;
 
 class ServerController extends Controller
 {
@@ -62,5 +63,15 @@ class ServerController extends Controller
     public function disk(): array
     {
         return Disk::simpleStat();
+    }
+
+    public function nginxTraffic()
+    {
+        $traffic = Log::accessTraffic();
+        if ($traffic === false) {
+            return response()->json(['sites' => [], 'total' => ['requests' => 0, 'bytes' => 0]]);
+        }
+
+        return response()->json($traffic);
     }
 }

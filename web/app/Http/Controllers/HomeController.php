@@ -6,6 +6,7 @@ use App\Libraries\Facades\Cpu;
 use App\Libraries\Facades\Disk;
 use App\Libraries\Facades\Memory;
 use App\Libraries\Facades\Network;
+use App\Libraries\Facades\Log;
 use App\Models\Website;
 
 class HomeController extends Controller
@@ -17,7 +18,8 @@ class HomeController extends Controller
         $memory = Memory::info();
         $disk = Disk::bytesReadable(disk_total_space('/'));
         $network = Network::traffic();
+        $traffic = Log::accessTraffic();
 
-        return view('Home.index', compact('countSite', 'cpus', 'memory', 'disk', 'network'));
+        return view('Home.index', compact('countSite', 'cpus', 'memory', 'disk', 'network', 'traffic'));
     }
 }

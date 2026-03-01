@@ -63,6 +63,42 @@
         </div>
     </div>
 </div>
+
+@if(isset($traffic) && is_array($traffic))
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">Access Traffic Summary</div>
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-sm-3"><strong>Total requests:</strong> <span id="traffic-total-requests">{{$traffic['total']['requests'] ?? 0}}</span></div>
+                    <div class="col-sm-3"><strong>Total bytes:</strong> <span id="traffic-total-bytes">{{ round(($traffic['total']['bytes'] ?? 0)/1024, 2) }}</span> kB</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Site</th>
+                                <th class="text-right">Requests</th>
+                                <th class="text-right">Bytes (kB)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="traffic-tbody">
+                            @foreach($traffic['sites'] ?? [] as $domain => $t)
+                                <tr>
+                                    <td>{{$domain}}</td>
+                                    <td class="text-right">{{$t['requests'] ?? 0}}</td>
+                                    <td class="text-right">{{ round(($t['bytes'] ?? 0)/1024, 2) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('js')
@@ -145,6 +181,32 @@
         })
     }
 
+    function updateNginxTraffic() {
+        $.ajax({
+            url: "{{route('server.nginx.traffic')}}",
+            type: 'post',
+            success: function(resp) {
+                const totalReq = resp.total?.requests ?? 0
+                const totalBytes = resp.total?.bytes ?? 0
+                $('#traffic-total-requests').text(totalReq)
+                $('#traffic-total-bytes').text(Math.round(totalBytes/1024*100)/100)
+
+                const tbody = $('#traffic-tbody')
+                tbody.empty()
+                const sites = resp.sites || {}
+                Object.keys(sites).forEach(function(domain){
+                    const t = sites[domain]
+                    const row = '<tr>'+
+                        '<td>'+domain+'</td>'+
+                        '<td class="text-right">'+(t.requests||0)+'</td>'+
+                        '<td class="text-right">'+(Math.round((t.bytes||0)/1024*100)/100)+'</td>'+
+                        '</tr>'
+                    tbody.append(row)
+                })
+            },
+        })
+    }
+
     let netIn = {{$network['in']['eth0']}}, netOut = {{$network['out']['eth0']}}
     function serverTraffic() {
         $.ajax({
@@ -161,11 +223,12 @@
                 netIn = resp.in.eth0
                 netOut = resp.out.eth0
             },
-        }).then(function(){
+            }).then(function(){
             setTimeout(() => {
                 diskIO()
                 serverInfo()
                 serverTraffic()
+                updateNginxTraffic()
             }, 5000);
         })
     }
@@ -177,6 +240,7 @@
             diskIO()
             serverInfo()
             serverTraffic()
+            updateNginxTraffic()
         }
     }
     

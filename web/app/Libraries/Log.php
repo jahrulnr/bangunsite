@@ -36,4 +36,74 @@ class Log
 
         return $tail;
     }
+
+    public function accessTraffic($domain = null): array|false
+    {
+        $files = [];
+        if ($domain) {
+            $paths = $this->getLogPath($domain);
+            $files = [basename($paths['access']) => $paths['access']];
+        } else {
+            $list = $this->accessLogList();
+            if (! $list) {
+                return false;
+            }
+            foreach ($list as $file) {
+                $files[basename($file)] = $file;
+            }
+        }
+
+        $result = [
+            'sites' => [],
+            'total' => ['requests' => 0, 'bytes' => 0],
+        ];
+
+        foreach ($files as $basename => $path) {
+            if (! file_exists($path)) {
+                continue;
+            }
+
+            $fp = fopen($path, 'r');
+            if (! $fp) {
+                continue;
+            }
+
+            $req = 0;
+            $bytes = 0;
+
+            while (! feof($fp)) {
+                $line = fgets($fp);
+                if (! $line) {
+                    continue;
+                }
+                $req++;
+
+                // Try to extract body bytes from typical nginx combined log:
+                // ... "request" STATUS BODY_BYTES "ref" "agent"
+                if (preg_match('/"[^\"]*"\s+\d{3}\s+(\d+|-)\s+"/', $line, $m)) {
+                    $b = $m[1] === '-' ? 0 : (int) $m[1];
+                    $bytes += $b;
+                } else {
+                    // fallback: find last numeric token
+                    if (preg_match('/\s(\d+)\s*$/', trim($line), $m2)) {
+                        $bytes += (int) $m2[1];
+                    }
+                }
+            }
+
+            fclose($fp);
+
+            // derive domain from filename: access-domain.log
+            $domainName = preg_replace(['/^access-/', '/\.log$/'], '', $basename);
+            $result['sites'][$domainName] = [
+                'requests' => $req,
+                'bytes' => $bytes,
+            ];
+
+            $result['total']['requests'] += $req;
+            $result['total']['bytes'] += $bytes;
+        }
+
+        return $result;
+    }
 }

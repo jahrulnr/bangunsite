@@ -31,14 +31,13 @@ if [ -d /var/setup ]; then
     rm -vr /var/setup >> /storage/app.log
 fi
 
-if [ ! -f /storage/.env ]; then
-    echo "--- Symlink to /storage ---"
-    ln -s /storage/.env /app/ >> /storage/app.log
-    ln -s /storage/fstab /etc/ >> /storage/app.log
-    ln -s /storage/nginx /etc/ >> /storage/app.log
-    ln -s /storage/php /etc/ >> /storage/app.log
-    ln -s /storage/www / >> /storage/app.log
-fi
+echo "--- Symlink to /storage ---"
+ln -s /storage/.env /app/ >> /storage/app.log
+ln -s /storage/fstab /etc/ >> /storage/app.log
+ln -s /storage/nginx /etc/ >> /storage/app.log
+ln -s /storage/php /etc/ >> /storage/app.log
+ln -s /storage/www / >> /storage/app.log
+
 if [ ! -L /etc/letsencrypt ]; then
     ln -s /storage/webconfig/ssl /etc/letsencrypt >> /storage/app.log
 fi

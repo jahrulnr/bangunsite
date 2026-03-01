@@ -49,8 +49,8 @@ class Disk
         }
 
         return [
-            'read' => $rps_value.' '.$rps,
-            'write' => $wps_value.' '.$wps,
+            'read' => round($rps_value, 2).' '.$rps,
+            'write' => round($wps_value, 2).' '.$wps,
         ];
     }
 
