@@ -46,14 +46,3 @@ precommit:
 
 force-composer:
 	cp config/platform_check.php web/vendor/composer/
-
-bangunsite=`docker container inspect -f '{{.State.Running}}' ${VMName}`
-test-image: 
-	docker build . --tag ${VMName} --file Dockerfile
-	docker run -d --name bangunsite-prod ${VMName}
-	sleep 5
-	docker exec -i bangunsite-prod curl localhost/healty.php -s --connect-timeout 10
-	docker exec -i bangunsite-prod artisan key:generate > /dev/null && sleep 2
-	docker exec -i bangunsite-prod curl localhost:8000/healty -sf --connect-timeout 10
-	docker stop bangunsite-prod > /dev/null && docker rm bangunsite-prod > /dev/null
-	docker rmi ${VMName} > /dev/null

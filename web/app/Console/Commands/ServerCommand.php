@@ -30,7 +30,6 @@ class ServerCommand extends ServeCommand
         if (! is_dir($webPath)) {
             exec("mkdir -p '{$webPath}/default'");
             copy('/storage/webconfig/index.html', $webPath.'/default/index.html');
-            copy('/storage/webconfig/healty.php', $webPath.'/default/healty.php');
             exec("chown -R apps:apps '{$webPath}'");
         }
 
