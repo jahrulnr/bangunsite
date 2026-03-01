@@ -9,7 +9,6 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\MountManager;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\SshController;
 use App\Http\Controllers\WebsiteManagerController;
 use Illuminate\Support\Facades\Route;
 

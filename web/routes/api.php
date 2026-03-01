@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\ServerController;
-use App\Http\Controllers\Api\SshController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/server/info', [ServerController::class, 'info'])->name('server.info');
