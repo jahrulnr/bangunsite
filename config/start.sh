@@ -76,6 +76,7 @@ if [ ! -f /storage/db.sqlite ]; then
     echo "--- Install Database (SQLite) ---"
     touch /storage/db.sqlite
     cd /app && artisan migrate --force >> /storage/app.log
+    cd /app && artisan db:seed >> /storage/app.log
 fi
 
 if [ ! -f /storage/webconfig/ssl/live/default/cert.pem ]; then

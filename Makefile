@@ -1,44 +1,44 @@
 VMTag=bangunsite:1.0
 VMName=bangunsite
 
-build-vm:
+build:
 	docker build . --tag ${VMTag} -f Dockerfile --progress=plain --network=host
-rebuild-vm: build-vm
-	@make up-vm
-	docker-compose logs -f bangunsite
-up-vm: 
-	if [ -z `docker images -q bangunsite` ]; then make build-vm; fi
-	if [ -z `docker network ls -qf name=bangunsite` ]; then docker network create -d bridge bangunsite; fi
+rebuild: build
+	@make up
+	docker compose logs -f bangunsite
+up: 
+	if [ -z `docker images -q services` ]; then make build; fi
+	if [ -z `docker network ls -qf name=services` ]; then docker network create --driver=overlay --attachable services; fi
 	if [ ! -d ./data ]; then \
 		mkdir -p ./data/logs/nginx \
 		&& mkdir ./data/logs/php \
 		&& mkdir ./data/www; \
 	fi
 	@make precommit
-	docker-compose --compatibility up -d bangunsite mail-server
-	docker-compose logs -f bangunsite
-logs-vm:
+	docker compose --compatibility up -d bangunsite
+	docker compose logs -f bangunsite
+logs:
 	docker logs -f -n 100 bangunsite
-down-vm:
+down:
 	make clear-cache
-	docker-compose down --remove-orphans
-clean-vm: down-vm
+	docker compose down --remove-orphans
+clean: down
 	docker rmi -f $(shell docker images -q ${VMTag})
 	sudo rm -r ./data && sudo rm -r ./web/vendor
 clear-cache:
 	docker exec -i ${VMName} artisan optimize:clear && \
 	docker exec -i ${VMName} artisan view:clear && \
 	docker exec -i ${VMName} artisan session:flush
-bash-vm:
+bash:
 	docker exec -it ${VMName} bash
 migrate:
 	docker exec -i ${VMName} php artisan migrate
 
-install-template:
-	chmod +x ./config/template/install.sh
-	if [ ! -d ./template ]; then sh ./config/template/install.sh; fi
-run-template: install-template
-	cd template && php -S localhost:9111
+# install-template:
+# 	chmod +x ./config/template/install.sh
+# 	if [ ! -d ./template ]; then sh ./config/template/install.sh; fi
+# run-template: install-template
+# 	cd template && php -S localhost:9111
 
 precommit:
 	cp pre-commit .git/hooks/

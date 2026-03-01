@@ -67,14 +67,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{route('ssh')}}" class="nav-link">
-                        <i class="nav-icon fas fa-terminal"></i>
-                        <p>
-                            SSH
-                        </p>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a href="{{route('cronjob.index')}}" class="nav-link">
                         <i class="nav-icon fas fa-tasks"></i>
                         <p>

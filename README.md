@@ -1,15 +1,13 @@
 # BangunSite
 
-A web-based server management tool with integrated SSH client, Docker container management, and SSL configuration capabilities.
+A web-based server management tool with integrated Docker container management, and SSL configuration capabilities.
 
 ## Features
 
 - 🔒 SSL/TLS Management
 - 🐳 Docker Container Management
-- 💻 Web-based SSH Client
 - 📁 File Manager
 - 🔄 Reverse Proxy Support
-- ⚡ PageSpeed Optimization
 
 ## System Requirements
 
@@ -22,13 +20,11 @@ A web-based server management tool with integrated SSH client, Docker container 
 - 7080 (HTTP)
 - 7443 (HTTPS)
 - 8080 (Web Management)
-- 13999 (SSH Client)
 
 #### Production Environment
 - 80 (HTTP)
 - 443 (HTTPS)
 - 8080 (Web Management)
-- 13999 (SSH)
 
 ## Quick Start
 
@@ -64,7 +60,6 @@ Then log in using:
 │   └── supervisord.conf  # Supervisor configuration
 ├── proxy/                # Reverse proxy service
 ├── web/                  # Main web application
-├── xterm/                # SSH client implementation
 ├── compose.yml           # Docker compose configuration
 └── Dockerfile            # Main container configuration
 ```
@@ -73,12 +68,6 @@ Then log in using:
 
 ### Web Management Interface
 The main web interface for managing server configurations, containers, and files. Built with Laravel and AdminLTE.
-
-### SSH Client
-A web-based SSH client implementation using:
-- Go backend for SSH connection handling
-- Xterm.js for terminal emulation
-- WebSocket for real-time communication
 
 ### Reverse Proxy
 A Go-based reverse proxy service handling SSL termination and request forwarding.

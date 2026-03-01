@@ -1,22 +1,10 @@
-FROM node:20.13-alpine3.20 AS nodebuilder
-WORKDIR /terminal-fe
-COPY ./xterm/front /terminal-fe
-RUN npm install \
-    && npm run build
-
-FROM golang:1.22.5-alpine3.20 AS gobuilder
+FROM golang:1.24.9-alpine3.22 AS gobuilder
 # build proxy for ssl
 WORKDIR /proxy
 COPY ./proxy /proxy
 RUN go mod tidy && go build -o main main.go
 
-# build go-ssh for ssh-client
-WORKDIR /xterm
-COPY ./xterm /xterm
-RUN go mod tidy && go build  -o main main.go
-
-FROM jahrulnr/nginx-pagespeed:1.26.2 AS plugin
-FROM nginx:1.26.2-bookworm AS base
+FROM nginx:1.29-bookworm
 
 # Set default shell to bash
 SHELL ["/bin/bash", "-c"]
@@ -32,11 +20,6 @@ RUN apt-get update \
         curl wget ca-certificates gnupg2 \
     && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
     && echo "deb https://packages.sury.org/php/ bookworm main" | tee /etc/apt/sources.list.d/php.list \
-    # && curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
-    # && gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg \
-    # && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-    #     http://nginx.org/packages/debian bookworm nginx" \
-    #     | tee /etc/apt/sources.list.d/nginx.list \
     && apt-get update && apt-get install -y --no-install-recommends \
         curl \
         tzdata \
@@ -44,7 +27,6 @@ RUN apt-get update \
         zip unzip \
         vim \
         docker.io \
-        # nginx=1.26.2-1~bookworm \
         php8.2-fpm \
         php8.2-cli \
         php8.2-opcache \
@@ -82,7 +64,6 @@ RUN apt-get update \
         supervisor \
     && ln -s /bin/ss /bin/netstat \
     && mkdir -p /run/php \
-    # && ln -s /usr/bin/php8.2 /usr/bin/php \
     && ln -s /usr/sbin/php-fpm8.2 /usr/sbin/php-fpm \
     && apt-get install -y certbot python3-certbot-nginx \
     && groupadd -g 1000 apps \
@@ -93,9 +74,7 @@ RUN apt-get update \
     && rm -rf /etc/nginx/conf.d /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
     && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer \
-    && rm -rf /tmp/composer-setup.php \
-    && mkdir -p /var/cache/ngx_pagespeed \
-    && chown apps:apps /var/cache/ngx_pagespeed
+    && rm -rf /tmp/composer-setup.php
 
 # setup /storage
 RUN mkdir /storage \
@@ -107,13 +86,6 @@ RUN mkdir /storage \
 
 # Copy the binary from the builder stage
 COPY --from=gobuilder /proxy/main /usr/bin/server-proxy
-
-# Copy xterm library from builder stage
-COPY --from=nodebuilder --chown=apps:apps /terminal-fe/node_modules/xterm/lib/* /app/public/assets/js/
-COPY --from=nodebuilder --chown=apps:apps /terminal-fe/node_modules/xterm/css/* /app/public/assets/css/
-COPY --from=nodebuilder --chown=apps:apps /terminal-fe/dist/* /app/public/assets/js/
-COPY --from=gobuilder /xterm/main /usr/bin/ssh-client
-COPY --from=plugin /usr/lib/nginx/modules/ngx_pagespeed.so /usr/lib/nginx/modules/ngx_pagespeed.so
 
 COPY ./config/nginx /var/setup/nginx
 COPY ./config/php /var/setup/php
@@ -128,8 +100,7 @@ RUN chmod +x /app/artisan /run/start.sh /run/fstab_mounter.sh
 EXPOSE 80
 EXPOSE 443
 EXPOSE 8080
-EXPOSE 13999
 
 WORKDIR /app
 CMD [ "/run/start.sh" ]
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "--fail", "localhost:10001/ping" ]
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "--fail", "localhost:80" ]

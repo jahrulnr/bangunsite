@@ -56,12 +56,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/mount/enable', [MountManager::class, 'enable'])->name('mount.enable');
     Route::get('/mount/delete', [MountManager::class, 'destroy'])->name('mount.destroy');
 
-    Route::get('/ssh', [SshController::class, 'index'])->name('ssh');
-    Route::get('/ssh/connect/{id}', [SshController::class, 'connect'])->name('ssh.connect')->where('id', '[0-9]+');
-    Route::post('/ssh', [SshController::class, 'add'])->name('ssh.add');
-    Route::post('/ssh/update', [SshController::class, 'update'])->name('ssh.update');
-    Route::get('/ssh/delete/{id}', [SshController::class, 'delete'])->name('ssh.delete')->where('id', '[0-9]+');
-
     Route::get('/logs', [LogController::class, 'index'])->name('logs');
     Route::get('/logs/get', [LogController::class, 'getLog'])->name('logs.get');
 
